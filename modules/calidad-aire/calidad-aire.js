@@ -27,24 +27,60 @@ LabUtils.attachDropzone(dropzone, fileInput, handleFile);
 async function handleFile(file) {
   loadErr.textContent = '';
   fname.textContent = file.name;
+  disableSteps();
+  sheetRow.style.display = 'none';
+  sheetSelect.innerHTML = '';
+
   try {
     workbook = await LabUtils.readWorkbook(file);
-    sheetNames = workbook.SheetNames;
-    sheetSelect.innerHTML = sheetNames.map(n => `<option value="${n}">${n}</option>`).join('');
-    sheetRow.style.display = 'flex';
-    loadSheet(sheetNames[0]);
   } catch (err) {
     loadErr.textContent = 'No se pudo leer el archivo: ' + err.message;
+    return;
   }
+
+  sheetNames = workbook.SheetNames || [];
+  if (sheetNames.length === 0) {
+    loadErr.textContent = 'El archivo no contiene hojas válidas.';
+    return;
+  }
+
+  sheetSelect.innerHTML = sheetNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  sheetRow.style.display = 'flex';
+  loadSheet(sheetNames[0]);
 }
 
 sheetSelect.addEventListener('change', () => loadSheet(sheetSelect.value));
 startRowInput.addEventListener('change', () => loadSheet(sheetSelect.value));
 
+// Limpia el panel de resumen y deshabilita los pasos 2/3, para que no queden datos
+// de una hoja o archivo anterior visibles mientras se evalúa la hoja recién elegida.
+function disableSteps() {
+  readout.classList.remove('on');
+  readout.innerHTML = '';
+  paramsBody.classList.add('disabled');
+  genBody.classList.add('disabled');
+  previewWrap.style.display = 'none';
+  dlBtn.style.display = 'none';
+  genErr.textContent = '';
+}
+
 function loadSheet(name) {
   loadErr.textContent = '';
-  aoa = LabUtils.sheetToAOA(workbook, name);
-  if (aoa.length < 3) { loadErr.textContent = 'Esta hoja no tiene suficientes filas.'; return; }
+  disableSteps();
+
+  if (!name) {
+    loadErr.textContent = 'No hay una hoja seleccionada.';
+    return;
+  }
+
+  try {
+    aoa = LabUtils.sheetToAOA(workbook, name);
+  } catch (err) {
+    loadErr.textContent = `No se pudo leer la hoja "${name}": ` + err.message;
+    return;
+  }
+
+  if (!aoa || aoa.length < 3) { loadErr.textContent = 'Esta hoja no tiene suficientes filas.'; return; }
 
   const headerRow = aoa[0] || [];
   unitsRow = aoa[1] || [];
@@ -52,8 +88,6 @@ function loadSheet(name) {
 
   if (!('Date' in colIndex) || !('Time' in colIndex)) {
     loadErr.textContent = 'No se encontraron columnas "Date" y "Time" en la fila 1 de esta hoja. Verifica que sea el formato esperado.';
-    paramsBody.classList.add('disabled');
-    genBody.classList.add('disabled');
     return;
   }
 
@@ -69,8 +103,6 @@ function loadSheet(name) {
   renderParamsTable();
   paramsBody.classList.remove('disabled');
   genBody.classList.remove('disabled');
-  previewWrap.style.display = 'none';
-  dlBtn.style.display = 'none';
 }
 
 // Detección de bloques, índices 0-based, replica el patrón 15+13*(k-1) / 14+13*(k-1) (1-based)

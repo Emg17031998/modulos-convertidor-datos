@@ -49,12 +49,22 @@ de otro módulo — solo consume funciones de `assets/js/utils.js`.
 
 ## Convenciones de diseño
 
-- Paleta: fondo `#F4F7F6`, tinta `#16302B`, acento teal `#1B6B63` / `#124A44`, ámbar `#B8860B`
-  para filas de totales/promedios. Tipografía sans (Inter o similar) para UI, monoespaciada
+- Paleta (variables CSS en `assets/css/style.css`): fondo `#F4F5FA` (`--bg`), tinta `#12162B`
+  (`--ink`) / `#5B6072` (`--ink-soft`), acento navy `#10288C` (`--accent`) con hover azul de
+  acción `#274DEA` (`--accent-hover`), acento lima `#EAF6AD` (`--accent-soft` / `--lime`, fondo de
+  paneles/iconos/badges) con borde `#B6DB00` (`--lime-border`) y texto sobre lima `#5C7A00`
+  (`--lime-ink`), ámbar `#B8860B` para filas de totales/promedios (sin relación con la paleta
+  lima — se mantiene como marcador semántico aparte). Tipografía: Poppins (600/700/800, vía
+  Google Fonts) para títulos, Inter (400–700) para texto de cuerpo/UI, monoespaciada
   (JetBrains Mono / Roboto Mono) para datos y lecturas tipo instrumento.
+- Cada página (landing y cada módulo) usa el mismo header de sitio: franja navy de ancho completo
+  con patrón de rejilla sutil (`.site-header` / `header.top` en la landing y en cada módulo
+  respectivamente — mismas clases `.site-header-*`), título en Poppins blanco y una leyenda en
+  lima. No dupliques este componente por módulo; reutiliza las clases existentes en `style.css`.
 - Cada módulo sigue el mismo patrón de 3 pasos: (1) cargar archivo, (2) elegir parámetros/opciones
-  del ensayo, (3) generar y descargar. Mantener esta estructura para que la experiencia sea
-  consistente entre ensayos.
+  del ensayo, (3) generar y descargar, presentados como tarjetas blancas redondeadas
+  (`border-radius` grande, sombra suave) sobre el fondo `--bg`. Mantener esta estructura para que
+  la experiencia sea consistente entre ensayos.
 - Los cálculos se escriben como valores ya resueltos en el .xlsx de salida (no fórmulas en vivo
   de Excel) — decisión deliberada por simplicidad y porque el set de parámetros varía por caso.
   Se incluye siempre una hoja de copia de los datos fuente para trazabilidad.

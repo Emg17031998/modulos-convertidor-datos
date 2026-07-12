@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promedios · Calidad de Aire Ambiental</title>
+<link rel="stylesheet" href="../../assets/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <a class="back" href="../../index.html">&larr; Todos los ensayos</a>
+      <h1 style="margin-top:6px;">Promedios · Calidad de Aire Ambiental</h1>
+    </div>
+    <span class="tag">Registros 5&nbsp;min &rarr; promedio horario</span>
+  </header>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-head"><div class="step-num">1</div><h2>Cargar archivo fuente (.xlsx)</h2></div>
+    <div class="step-body">
+      <div class="dropzone" id="dropzone">
+        <div>Arrastra el archivo aquí o haz clic para elegirlo</div>
+        <div class="fname" id="fname">Ningún archivo cargado</div>
+        <input type="file" id="fileInput" accept=".xlsx,.xls">
+      </div>
+      <div class="row" id="sheetRow" style="display:none;">
+        <div class="field">
+          <label>Hoja</label>
+          <select id="sheetSelect"></select>
+        </div>
+        <div class="field">
+          <label>Fila donde inician los datos</label>
+          <input type="number" id="startRow" value="3" min="2">
+        </div>
+      </div>
+      <div class="readout" id="readout"></div>
+      <p class="err" id="loadErr"></p>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-head"><div class="step-num">2</div><h2>Elegir parámetros</h2></div>
+    <div class="step-body disabled" id="paramsBody">
+      <p class="hint">Marca los parámetros a extraer de esta hoja. Para gases en ppb, marca "convertir" e indica el peso molecular para obtener µg/m³.</p>
+      <table class="params" id="paramsTable">
+        <thead><tr><th></th><th>Parámetro</th><th>Unidad fuente</th><th>Convertir a µg/m³</th><th>PM (g/mol)</th></tr></thead>
+        <tbody id="paramsBodyRows"></tbody>
+      </table>
+      <div class="row">
+        <div class="field">
+          <label>Volumen molar (L/mol)</label>
+          <input type="number" id="molarVol" value="24.45" step="0.01">
+        </div>
+      </div>
+      <p class="hint">µg/m³ = ppb × PM / volumen molar (convención EPA, 25 °C y 1 atm).</p>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-head"><div class="step-num">3</div><h2>Generar y descargar</h2></div>
+    <div class="step-body disabled" id="genBody">
+      <div class="actions">
+        <button class="primary" id="genBtn">Generar promedios</button>
+        <button class="ghost" id="dlBtn" style="display:none;">Descargar .xlsx</button>
+      </div>
+      <p class="err" id="genErr"></p>
+      <div class="preview-wrap" id="previewWrap" style="display:none;">
+        <table class="preview" id="previewTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <p class="footnote">
+    Detecta bloques de 12 registros de 5 min + 1 fila de promedio (patrón EPAS). Si una fila de promedio está vacía,
+    el promedio se calcula automáticamente a partir de los 12 registros del bloque. El archivo descargado incluye
+    la hoja "Promedios" y una copia de la hoja fuente para trazabilidad. Los valores en "Promedios" son calculados
+    por esta herramienta (no son fórmulas en vivo de Excel).
+  </p>
+</div>
+
+<script src="../../assets/js/utils.js"></script>
+<script src="calidad-aire.js"></script>
+</body>
+</html>

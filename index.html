@@ -4,35 +4,59 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Convertidor de Calidad de Datos · Laboratorio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body>
-<div class="wrap">
+<body class="landing">
 
-  <header class="top">
-    <h1>Herramientas de laboratorio</h1>
-    <span class="tag">Cálculos y conversión de datos por ensayo</span>
+  <header class="landing-header">
+    <div class="landing-header-inner">
+      <div class="landing-header-brand">
+        <h1>Herramientas de Laboratorio</h1>
+        <span class="landing-header-sub">Laboratorio Ambiental</span>
+      </div>
+      <span class="landing-header-tag">Cálculos y conversión de datos por ensayo</span>
+    </div>
   </header>
 
-  <p class="hint" style="margin-bottom:18px;">
-    Elige el ensayo. Cada herramienta procesa el archivo directamente en tu navegador — nada se
-    envía a ningún servidor.
-  </p>
+  <main class="landing-main">
+    <p class="landing-lead">
+      Elige el ensayo. Cada herramienta procesa el archivo directamente en tu navegador — nada se
+      envía a ningún servidor.
+    </p>
 
-  <div class="modules-grid">
-    <a class="module-card" href="modules/calidad-aire/index.html">
-      <span class="badge">Disponible</span>
-      <h3>Calidad de Aire Ambiental</h3>
-      <p>Extrae promedios horarios desde datos de 5 min (formato EPAS), con conversión opcional ppb → µg/m³.</p>
-    </a>
+    <div class="landing-panel">
+      <div class="landing-grid">
 
-    <div class="module-card soon">
-      <span class="badge">Próximamente</span>
-      <h3>Vibración (WBV / HAV)</h3>
-      <p>Procesamiento de datos de vibración cuerpo entero y mano-brazo.</p>
+        <a class="landing-card" href="modules/calidad-aire/index.html">
+          <span class="landing-card-badge">Disponible</span>
+          <div class="landing-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 8h11a3 3 0 1 0-3-3"/>
+              <path d="M3 13h15a3 3 0 1 1-3 3"/>
+              <path d="M3 18h8a2.5 2.5 0 1 0-2.5-2.5"/>
+            </svg>
+          </div>
+          <h3>Calidad de Aire Ambiental</h3>
+          <p>Extrae promedios horarios desde datos de 5 min (formato EPAS), con conversión opcional ppb → µg/m³.</p>
+        </a>
+
+        <div class="landing-card soon">
+          <span class="landing-card-badge soon">Próximamente</span>
+          <div class="landing-card-icon soon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12h3l2-7 3 14 3-10 2 5h4l3 3"/>
+            </svg>
+          </div>
+          <h3>Vibración (WBV / HAV)</h3>
+          <p>Procesamiento de datos de vibración cuerpo entero y mano-brazo.</p>
+        </div>
+
+      </div>
     </div>
-  </div>
+  </main>
 
-</div>
 </body>
 </html>

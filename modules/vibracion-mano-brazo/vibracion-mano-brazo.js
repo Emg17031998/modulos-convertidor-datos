@@ -80,6 +80,44 @@ function buildBandColIndex(headerRow) {
   return colIndex;
 }
 
+// Nombre del operador = todo el texto del nombre de archivo antes de "MANO IZQUIERDA/IZQ" o
+// "MANO DERECHA/DER" (sin distinguir mayúsculas/minúsculas; los archivos reales del laboratorio
+// usan indistintamente la forma completa y la abreviada). Las formas largas van primero en la
+// alternativa para que "DERECHA" no quede cortada en "DER". Sin \b después de la alternativa a
+// propósito: así "...DER1.xlsx" / "...DERECHA2.xlsx" también matchean (el sufijo numérico queda
+// fuera del grupo capturado, se ignora como pide el requerimiento).
+const OPERATOR_NAME_RE = /^(.*?)\s*mano\s+(izquierda|izq|derecha|der)/i;
+
+function extractOperatorName(fileName) {
+  const base = fileName.replace(/\.[a-z0-9]+$/i, '');
+  const m = base.match(OPERATOR_NAME_RE);
+  if (!m) return null;
+  const name = m[1].replace(/\s+/g, ' ').trim();
+  return name || null;
+}
+
+// Comparación normalizada de nombres de operador: trim, colapsar espacios, mayúsculas.
+function normalizeOperatorName(name) {
+  return (name || '').trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+// A partir de los 3 archivos de un brazo, arma la info de operador: nombre detectado por
+// archivo, si los 3 coinciden (comparación normalizada) y qué nombre final usar para
+// exportación (el del primer archivo si no coinciden — la discrepancia queda registrada
+// en armOperatorInfo.warning y luego en la hoja de trazabilidad).
+function computeArmOperatorInfo(filesArr) {
+  const perFile = filesArr.map(f => ({ fileName: f.file.name, raw: f.operatorName }));
+  const normalized = perFile.map(p => normalizeOperatorName(p.raw));
+  const consistent = normalized.every(n => n && n === normalized[0]);
+  const finalName = (perFile[0] && perFile[0].raw) ? perFile[0].raw : null;
+  let warning = null;
+  if (!consistent) {
+    const detail = perFile.map(p => `"${p.fileName}" → ${p.raw || '(no detectado)'}`).join('; ');
+    warning = `Los 3 archivos de este brazo no coinciden en el nombre de operador detectado: ${detail}.`;
+  }
+  return { perFile, finalName, consistent, warning };
+}
+
 const armTemplate = document.getElementById('armTemplate');
 const armControllers = {};
 
@@ -95,6 +133,7 @@ function createArmController(side, label, mountEl) {
   const fname = el('fname');
   const axisList = el('axisList');
   const loadErr = el('loadErr');
+  const operatorWarnEl = el('operatorWarn');
   const calcErr = el('calcErr');
   const previewWrap = el('previewWrap');
   const previewTable = el('previewTable');
@@ -104,9 +143,10 @@ function createArmController(side, label, mountEl) {
   // referencias siguen funcionando sobre un nodo desmontado, sin efecto visible).
   if (!DEBUG_MODE) debugPanel.remove();
 
-  // files: [{ file, workbook, detected: {X,Y,Z}, manual: {X,Y,Z} }]
+  // files: [{ file, workbook, detected: {X,Y,Z}, manual: {X,Y,Z}, operatorName }]
   let files = [];
   let lastResult = null;
+  let armOperatorInfo = null;
 
   LabUtils.attachMultiDropzone(dropzone, fileInput, handleFiles);
 
@@ -117,7 +157,11 @@ function createArmController(side, label, mountEl) {
     previewWrap.style.display = 'none';
     files = [];
     lastResult = null;
+    armOperatorInfo = null;
+    operatorWarnEl.textContent = '';
+    operatorWarnEl.style.display = 'none';
     updateGlobalDownloadState();
+    updateOperatorCrossCheck();
 
     if (fileArr.length !== 3) {
       fname.textContent = 'Ningún archivo cargado';
@@ -130,7 +174,12 @@ function createArmController(side, label, mountEl) {
     for (const file of fileArr) {
       try {
         const workbook = await LabUtils.readWorkbook(file);
-        files.push({ file, workbook, detected: detectAxisSheets(workbook), manual: { X: null, Y: null, Z: null } });
+        files.push({
+          file, workbook,
+          detected: detectAxisSheets(workbook),
+          manual: { X: null, Y: null, Z: null },
+          operatorName: extractOperatorName(file.name)
+        });
       } catch (err) {
         loadErr.textContent = `No se pudo leer "${file.name}": ` + err.message;
         files = [];
@@ -138,7 +187,14 @@ function createArmController(side, label, mountEl) {
       }
     }
 
+    armOperatorInfo = computeArmOperatorInfo(files);
+    if (armOperatorInfo.warning) {
+      operatorWarnEl.textContent = armOperatorInfo.warning;
+      operatorWarnEl.style.display = 'block';
+    }
+
     renderFileList();
+    updateOperatorCrossCheck();
   }
 
   function resolvedSheet(f, axis) {
@@ -180,11 +236,14 @@ function createArmController(side, label, mountEl) {
   function reset() {
     files = [];
     lastResult = null;
+    armOperatorInfo = null;
     fname.textContent = 'Ningún archivo cargado';
     fileInput.value = '';
     axisList.innerHTML = '';
     loadErr.textContent = '';
     calcErr.textContent = '';
+    operatorWarnEl.textContent = '';
+    operatorWarnEl.style.display = 'none';
     previewWrap.style.display = 'none';
     previewTable.innerHTML = '';
     debugPanel.style.display = 'none'; // DEBUG TEMPORAL
@@ -294,7 +353,8 @@ function createArmController(side, label, mountEl) {
 
         traceInfo.push({
           fileName: f.file.name, axis, sheetName,
-          method: f.manual[axis] ? 'Manual' : 'Automático (nombre de hoja)'
+          method: f.manual[axis] ? 'Manual' : 'Automático (nombre de hoja)',
+          operatorName: f.operatorName
         });
       }
     }
@@ -323,7 +383,7 @@ function createArmController(side, label, mountEl) {
       return { band, X, Y, Z, aeq8h, limite, estado };
     });
 
-    lastResult = { side, label, rows, tiempoMin, traceInfo };
+    lastResult = { side, label, rows, tiempoMin, traceInfo, operatorInfo: armOperatorInfo };
     renderPreview(lastResult);
     updateGlobalDownloadState();
   }
@@ -392,6 +452,7 @@ function createArmController(side, label, mountEl) {
 
   return {
     getResult: () => lastResult,
+    getOperatorInfo: () => armOperatorInfo,
     hasFiles,
     calculate,
     reset
@@ -404,6 +465,7 @@ armControllers.der = createArmController('der', 'Brazo Derecho', document.getEle
 const tiempoInput = document.getElementById('tiempoInput');
 const calcBtn = document.getElementById('calcBtn');
 const calcErrGlobal = document.getElementById('calcErrGlobal');
+const operatorWarnGlobal = document.getElementById('operatorWarnGlobal');
 const dlAllBtn = document.getElementById('dlAllBtn');
 const clearBtn = document.getElementById('clearBtn');
 const genErr = document.getElementById('genErr');
@@ -411,6 +473,20 @@ const genErr = document.getElementById('genErr');
 function updateGlobalDownloadState() {
   const anyResult = armControllers.izq.getResult() || armControllers.der.getResult();
   dlAllBtn.disabled = !anyResult;
+}
+
+// Si ambos brazos ya tienen archivos cargados y el operador detectado en cada uno difiere,
+// advertir (no bloquea nada — puede ser normal si son dos personas distintas).
+function updateOperatorCrossCheck() {
+  operatorWarnGlobal.textContent = '';
+  operatorWarnGlobal.style.display = 'none';
+  const derInfo = armControllers.der.getOperatorInfo();
+  const izqInfo = armControllers.izq.getOperatorInfo();
+  if (!derInfo || !izqInfo || !derInfo.finalName || !izqInfo.finalName) return;
+  if (normalizeOperatorName(derInfo.finalName) !== normalizeOperatorName(izqInfo.finalName)) {
+    operatorWarnGlobal.textContent = `El operador detectado en Brazo Derecho ("${derInfo.finalName}") difiere del detectado en Brazo Izquierdo ("${izqInfo.finalName}"). Verifica que sea intencional antes de exportar.`;
+    operatorWarnGlobal.style.display = 'block';
+  }
 }
 
 // Un único tiempo de exposición aplica a ambos brazos: al calcular, se procesa
@@ -455,6 +531,7 @@ clearBtn.addEventListener('click', () => {
   calcErrGlobal.textContent = '';
   genErr.textContent = '';
   updateGlobalDownloadState();
+  updateOperatorCrossCheck();
   clearBtn.style.display = 'none';
 });
 
@@ -465,6 +542,11 @@ const EXPORT_FONT_NAME = 'Arial Narrow';
 const EXPORT_FONT_SIZE = 9;
 const EXCEDE_COLOR = 'FF008000';
 
+// Slug de nombre de operador para el nombre del archivo exportado (mayúsculas, espacios -> _).
+function operatorFileSlug(name) {
+  return normalizeOperatorName(name).replace(/ /g, '_');
+}
+
 async function buildAndDownload(results) {
   const wb = new ExcelJS.Workbook();
   const headers = ['Frecuencia (Hz)', 'Aceleración X (m/s²) Medido', 'Aceleración Y (m/s²) Medido',
@@ -474,11 +556,18 @@ async function buildAndDownload(results) {
   const traceRows = [
     ['Trazabilidad — Vibración Mano-Brazo (HAV)'],
     [],
-    ['Brazo', 'Archivo (minuto)', 'Eje', 'Hoja usada', 'Método', 'Tiempo de exposición (min)'],
+    ['Brazo', 'Archivo (minuto)', 'Eje', 'Hoja usada', 'Método', 'Operador detectado',
+      'Tiempo de exposición (min)', 'Discrepancia de operador en el brazo'],
   ];
 
   results.forEach(res => {
     const ws = wb.addWorksheet(res.label.substring(0, 28));
+
+    const operatorName = (res.operatorInfo && res.operatorInfo.finalName) ? res.operatorInfo.finalName : 'No detectado';
+    const operatorRow = ws.addRow([`Operador: ${operatorName}`]);
+    operatorRow.font = { name: EXPORT_FONT_NAME, size: EXPORT_FONT_SIZE, bold: true };
+    ws.mergeCells(operatorRow.number, 1, operatorRow.number, headers.length);
+
     const headerRow = ws.addRow(headers);
     LabUtils.styleHeaderRow(headerRow);
     headerRow.font = { ...headerRow.font, name: EXPORT_FONT_NAME, size: EXPORT_FONT_SIZE };
@@ -507,10 +596,29 @@ async function buildAndDownload(results) {
     });
     ws.columns.forEach(col => { col.width = 20; });
 
+    const hasDiscrepancy = res.operatorInfo && !res.operatorInfo.consistent;
     res.traceInfo.forEach(t => {
-      traceRows.push([res.label, t.fileName, t.axis, t.sheetName, t.method, res.tiempoMin]);
+      traceRows.push([
+        res.label, t.fileName, t.axis, t.sheetName, t.method,
+        t.operatorName || '(no detectado)', res.tiempoMin, hasDiscrepancy ? 'Sí' : 'No'
+      ]);
     });
   });
+
+  // Constancia de la comparación de operador entre ambos brazos (si se calcularon los dos).
+  const derRes = results.find(r => r.side === 'der');
+  const izqRes = results.find(r => r.side === 'izq');
+  if (derRes && izqRes && derRes.operatorInfo && izqRes.operatorInfo &&
+    derRes.operatorInfo.finalName && izqRes.operatorInfo.finalName) {
+    const sameOperator = normalizeOperatorName(derRes.operatorInfo.finalName) === normalizeOperatorName(izqRes.operatorInfo.finalName);
+    traceRows.push(
+      [],
+      ['Comparación de operador entre brazos'],
+      ['Operador Brazo Derecho', derRes.operatorInfo.finalName],
+      ['Operador Brazo Izquierdo', izqRes.operatorInfo.finalName],
+      ['¿Coinciden?', sameOperator ? 'Sí' : 'No']
+    );
+  }
 
   traceRows.push(
     [],
@@ -525,5 +633,7 @@ async function buildAndDownload(results) {
     row.font = { name: EXPORT_FONT_NAME, size: EXPORT_FONT_SIZE, bold: rowNumber === 1 };
   });
 
-  await LabUtils.downloadWorkbook(wb, 'Vibracion_Mano_Brazo.xlsx');
+  const operatorForFileName = results.map(r => r.operatorInfo && r.operatorInfo.finalName).find(Boolean);
+  const fileName = 'Vibracion_Mano_Brazo_HAV' + (operatorForFileName ? '_' + operatorFileSlug(operatorForFileName) : '') + '.xlsx';
+  await LabUtils.downloadWorkbook(wb, fileName);
 }

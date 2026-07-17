@@ -1,0 +1,57 @@
+/* Estilos específicos del módulo Vibración Mano-Brazo (HAV).
+   Todo aquí va bajo body.vmb-page para no afectar la landing ni otros módulos,
+   que siguen usando únicamente assets/css/style.css. */
+
+body.vmb-page{
+  background-color:#08872b;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(234,246,173,.08) 0, rgba(234,246,173,.08) 1px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(90deg, rgba(234,246,173,.08) 0, rgba(234,246,173,.08) 1px, transparent 1px, transparent 40px);
+  min-height:100vh;
+}
+
+/* Franja de encabezado más alta, con el bloque de título centrado verticalmente. */
+body.vmb-page .site-header{
+  padding:64px 20px;
+}
+body.vmb-page .site-header-inner{
+  align-items:center;
+}
+
+/* Título en dos líneas ("wordmark"): LABORATORIO (bold, mayúsculas, tracking amplio) sobre
+   Vibración Mano-Brazo (delgado), ajustado en tamaño para que ambas líneas ocupen un ancho
+   visual similar. */
+body.vmb-page .vmb-title{
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+body.vmb-page .vmb-title-eyebrow{
+  font-family:'Archivo', var(--sans);
+  font-weight:800;
+  font-size:26px;
+  line-height:1;
+  color:#fff;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+body.vmb-page .vmb-title-main{
+  font-family:'Archivo', var(--sans);
+  font-weight:300;
+  font-size:24px;
+  line-height:1.1;
+  color:#fff;
+  letter-spacing:.01em;
+}
+
+/* Tarjetas de contenido que quedan directamente sobre el verde de fondo (no ya sobre un
+   panel blanco) necesitan más presencia para no perderse visualmente. */
+body.vmb-page .step{
+  box-shadow:0 12px 30px rgba(0,0,0,.20);
+  border:1px solid rgba(255,255,255,.35);
+}
+body.vmb-page .footnote{
+  color:rgba(255,255,255,.85);
+  border-top-color:rgba(255,255,255,.35);
+}

@@ -34,6 +34,10 @@ const DATE_TIME_ALIASES = { Fecha: ['fecha', 'date'], Hora: ['hora', 'time'] };
 // panel .debug-panel del HTML cuando se cierre el diagnóstico.
 const DEBUG_BAND = 8;
 
+// El panel de diagnóstico solo se incluye en el DOM cuando la URL trae ?debug=1 — sin el
+// parámetro, ni siquiera se renderiza (no solo oculto por CSS).
+const DEBUG_MODE = new URLSearchParams(window.location.search).get('debug') === '1';
+
 // Recorre TODAS las hojas de un archivo y devuelve {X: nombreHoja|null, Y: ..., Z: ...}
 // según el patrón "<eje> OBA" en el nombre de cada hoja. Si dos hojas calzan con el mismo
 // eje, gana la primera (izquierda a derecha).
@@ -96,6 +100,9 @@ function createArmController(side, label, mountEl) {
   const previewTable = el('previewTable');
   const debugPanel = el('debugPanel'); // DEBUG TEMPORAL
   const debugContent = el('debugContent'); // DEBUG TEMPORAL
+  // Sin ?debug=1 en la URL, el panel de diagnóstico se quita del DOM por completo (las demás
+  // referencias siguen funcionando sobre un nodo desmontado, sin efecto visible).
+  if (!DEBUG_MODE) debugPanel.remove();
 
   // files: [{ file, workbook, detected: {X,Y,Z}, manual: {X,Y,Z} }]
   let files = [];
@@ -430,7 +437,7 @@ calcBtn.addEventListener('click', () => {
 
 dlAllBtn.addEventListener('click', async () => {
   genErr.textContent = '';
-  const results = ['izq', 'der'].map(s => armControllers[s].getResult()).filter(Boolean);
+  const results = ['der', 'izq'].map(s => armControllers[s].getResult()).filter(Boolean);
   if (results.length === 0) { genErr.textContent = 'Calcula al menos un brazo antes de descargar.'; return; }
 
   try {

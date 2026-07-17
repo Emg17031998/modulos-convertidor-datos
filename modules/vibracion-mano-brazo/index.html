@@ -37,17 +37,6 @@
 
         <div class="file-axis-list" data-role="axisList"></div>
         <p class="err" data-role="loadErr"></p>
-
-        <div class="row">
-          <div class="field">
-            <label>Tiempo de exposición real (minutos)</label>
-            <input type="number" data-role="tiempo" min="1" step="1" placeholder="Ej. 240">
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="primary" data-role="calcBtn">Calcular</button>
-        </div>
         <p class="err" data-role="calcErr"></p>
 
         <div class="preview-wrap" data-role="previewWrap" style="display:none;">
@@ -68,13 +57,32 @@
   <div id="armIzq"></div>
 
   <div class="step">
-    <div class="step-head"><div class="step-num">3</div><h2>Generar y descargar reporte</h2></div>
+    <div class="step-head"><div class="step-num">3</div><h2>Tiempo de exposición y cálculo</h2></div>
+    <div class="step-body">
+      <div class="row">
+        <div class="field">
+          <label>Tiempo de exposición real (minutos)</label>
+          <input type="number" id="tiempoInput" min="1" step="1" placeholder="Ej. 240">
+        </div>
+      </div>
+      <p class="hint">Este valor se aplica por igual al cálculo de ambos brazos. Al presionar Calcular se
+        procesa automáticamente cualquier brazo que ya tenga sus 3 archivos cargados.</p>
+      <div class="actions">
+        <button class="primary" id="calcBtn">Calcular</button>
+      </div>
+      <p class="err" id="calcErrGlobal"></p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head"><div class="step-num">4</div><h2>Generar y descargar reporte</h2></div>
     <div class="step-body" id="genBody">
       <p class="hint">Calcula al menos un brazo para habilitar la descarga. El reporte incluye una hoja por
         brazo calculado y una hoja de trazabilidad con los archivos fuente, el eje asignado a cada uno,
         el tiempo de exposición y las fórmulas usadas.</p>
       <div class="actions">
         <button class="ghost" id="dlAllBtn" disabled>Descargar reporte (.xlsx)</button>
+        <button class="ghost" id="clearBtn" style="display:none;">Limpiar archivos</button>
       </div>
       <p class="err" id="genErr"></p>
     </div>

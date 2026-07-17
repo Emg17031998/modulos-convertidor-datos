@@ -91,8 +91,6 @@ function createArmController(side, label, mountEl) {
   const fname = el('fname');
   const axisList = el('axisList');
   const loadErr = el('loadErr');
-  const tiempoInput = el('tiempo');
-  const calcBtn = el('calcBtn');
   const calcErr = el('calcErr');
   const previewWrap = el('previewWrap');
   const previewTable = el('previewTable');
@@ -168,7 +166,28 @@ function createArmController(side, label, mountEl) {
     });
   }
 
-  calcBtn.addEventListener('click', () => {
+  function hasFiles() {
+    return files.length === 3;
+  }
+
+  function reset() {
+    files = [];
+    lastResult = null;
+    fname.textContent = 'Ningún archivo cargado';
+    fileInput.value = '';
+    axisList.innerHTML = '';
+    loadErr.textContent = '';
+    calcErr.textContent = '';
+    previewWrap.style.display = 'none';
+    previewTable.innerHTML = '';
+    debugPanel.style.display = 'none'; // DEBUG TEMPORAL
+    debugContent.innerHTML = ''; // DEBUG TEMPORAL
+  }
+
+  // Calcula este brazo con el tiempo de exposición compartido (mismo valor para ambos
+  // brazos). Llamado desde el botón "Calcular" único, solo para brazos con 3 archivos
+  // cargados — no valida tiempoMin, eso lo hace el llamador antes de invocar.
+  function calculate(tiempoMin) {
     calcErr.textContent = '';
     previewWrap.style.display = 'none';
     debugPanel.style.display = 'none'; // DEBUG TEMPORAL
@@ -176,12 +195,6 @@ function createArmController(side, label, mountEl) {
     updateGlobalDownloadState();
 
     if (files.length !== 3) { calcErr.textContent = 'Carga los 3 archivos antes de calcular.'; return; }
-
-    const tiempoMin = parseFloat(tiempoInput.value);
-    if (!tiempoInput.value || isNaN(tiempoMin) || tiempoMin <= 0) {
-      calcErr.textContent = 'Ingresa el tiempo de exposición real (minutos).';
-      return;
-    }
 
     // Validar que los 3 archivos tengan hoja resuelta (detectada o manual) para X, Y y Z,
     // y que dentro de un mismo archivo no se haya asignado la misma hoja a dos ejes.
@@ -306,7 +319,7 @@ function createArmController(side, label, mountEl) {
     lastResult = { side, label, rows, tiempoMin, traceInfo };
     renderPreview(lastResult);
     updateGlobalDownloadState();
-  });
+  }
 
   function renderPreview(res) {
     let head = '<tr><th>Frecuencia (Hz)</th><th>X (m/s²) Medido</th><th>Y (m/s²) Medido</th>' +
@@ -371,20 +384,49 @@ function createArmController(side, label, mountEl) {
   }
 
   return {
-    getResult: () => lastResult
+    getResult: () => lastResult,
+    hasFiles,
+    calculate,
+    reset
   };
 }
 
 armControllers.izq = createArmController('izq', 'Brazo Izquierdo', document.getElementById('armIzq'));
 armControllers.der = createArmController('der', 'Brazo Derecho', document.getElementById('armDer'));
 
+const tiempoInput = document.getElementById('tiempoInput');
+const calcBtn = document.getElementById('calcBtn');
+const calcErrGlobal = document.getElementById('calcErrGlobal');
 const dlAllBtn = document.getElementById('dlAllBtn');
+const clearBtn = document.getElementById('clearBtn');
 const genErr = document.getElementById('genErr');
 
 function updateGlobalDownloadState() {
   const anyResult = armControllers.izq.getResult() || armControllers.der.getResult();
   dlAllBtn.disabled = !anyResult;
 }
+
+// Un único tiempo de exposición aplica a ambos brazos: al calcular, se procesa
+// automáticamente cualquier brazo que ya tenga sus 3 archivos cargados (si solo se cargó
+// uno de los dos brazos, se calcula solo ese).
+calcBtn.addEventListener('click', () => {
+  calcErrGlobal.textContent = '';
+
+  const tiempoMin = parseFloat(tiempoInput.value);
+  if (!tiempoInput.value || isNaN(tiempoMin) || tiempoMin <= 0) {
+    calcErrGlobal.textContent = 'Ingresa el tiempo de exposición real (minutos).';
+    return;
+  }
+
+  const sides = ['der', 'izq'].filter(s => armControllers[s].hasFiles());
+  if (sides.length === 0) {
+    calcErrGlobal.textContent = 'Carga los 3 archivos de al menos un brazo antes de calcular.';
+    return;
+  }
+
+  sides.forEach(s => armControllers[s].calculate(tiempoMin));
+  updateGlobalDownloadState();
+});
 
 dlAllBtn.addEventListener('click', async () => {
   genErr.textContent = '';
@@ -393,9 +435,20 @@ dlAllBtn.addEventListener('click', async () => {
 
   try {
     await buildAndDownload(results);
+    clearBtn.style.display = '';
   } catch (err) {
     genErr.textContent = 'Error generando el archivo: ' + err.message;
   }
+});
+
+clearBtn.addEventListener('click', () => {
+  armControllers.der.reset();
+  armControllers.izq.reset();
+  tiempoInput.value = '';
+  calcErrGlobal.textContent = '';
+  genErr.textContent = '';
+  updateGlobalDownloadState();
+  clearBtn.style.display = 'none';
 });
 
 // Fuente del documento de exportación (todas las hojas). El valor que excede el límite de

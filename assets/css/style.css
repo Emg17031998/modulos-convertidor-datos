@@ -154,6 +154,7 @@ button.ghost{
   font-family:var(--font-body);transition:background .15s;
 }
 button.ghost:hover{background:var(--accent-soft);}
+button.ghost:disabled{border-color:var(--line);color:var(--disabled-ink);cursor:not-allowed;background:transparent;}
 
 .preview-wrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:16px;}
 table.preview{border-collapse:collapse;width:100%;font-size:12.5px;font-family:var(--mono);}
@@ -165,6 +166,52 @@ table.preview th{
 table.preview th:first-child, table.preview td:first-child{text-align:left;}
 table.preview td{padding:6px 10px;text-align:right;border-bottom:1px solid #EEF2F1;white-space:nowrap;}
 table.preview tr.avg td{background:var(--amber-soft);font-weight:700;}
+
+/* Estado pass/fail (ej. cumple/excede un límite) — reutilizable por cualquier ensayo. */
+.status-ok, .status-bad{
+  display:inline-block;font-family:var(--font-body);font-weight:700;font-size:11px;
+  text-transform:uppercase;letter-spacing:.3px;padding:3px 9px;border-radius:999px;
+}
+.status-ok{background:#DCF0E0;color:#1E7B34;}
+.status-bad{background:#FBD9D3;color:#9C1F0E;}
+
+/* Resumen de detección de hojas por archivo (ej. vibración mano-brazo: qué hoja de cada
+   archivo corresponde a cada eje X/Y/Z). */
+.file-axis-list{margin-top:14px;display:flex;flex-direction:column;gap:10px;}
+.file-axis-card{
+  padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;
+}
+.file-axis-name{font-family:var(--mono);font-size:12.5px;color:var(--ink);font-weight:600;margin-bottom:6px;}
+.file-axis-row{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  font-family:var(--font-body);font-size:12.5px;color:var(--ink-soft);
+  padding:4px 0;
+}
+.file-axis-row .axis-icon{flex:0 0 auto;font-weight:700;}
+.file-axis-row.ok .axis-icon{color:#1E7B34;}
+.file-axis-row.warn{color:#A3311A;font-weight:600;}
+.file-axis-row.warn .axis-icon{color:#A3311A;}
+.axis-manual-select{
+  font-family:var(--font-body);font-size:13px;font-weight:400;padding:6px 8px;
+  border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);
+}
+
+/* DEBUG TEMPORAL — panel de diagnóstico de vibración mano-brazo. Quitar junto con el
+   panel/lógica de debug en vibracion-mano-brazo.js cuando se cierre el diagnóstico. */
+.debug-panel{
+  margin-top:16px;border:1.5px dashed var(--amber);border-radius:12px;
+  padding:10px 14px;background:var(--amber-soft);
+}
+.debug-panel summary{
+  cursor:pointer;font-family:var(--font-body);font-weight:700;font-size:12.5px;color:#7A5A06;
+}
+.debug-panel[open] summary{margin-bottom:10px;}
+table.debug-table{border-collapse:collapse;width:100%;font-size:11.5px;font-family:var(--mono);margin-top:8px;}
+table.debug-table th{
+  text-align:left;background:#FCEFC7;color:#7A5A06;padding:5px 8px;
+  border-bottom:1px solid var(--amber);white-space:nowrap;
+}
+table.debug-table td{padding:5px 8px;border-bottom:1px solid #F0E4BE;vertical-align:top;}
 
 .actions{margin-top:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 .err{color:#A3311A;font-size:12.5px;margin-top:10px;font-weight:600;font-family:var(--font-body);}

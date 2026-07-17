@@ -4,6 +4,30 @@
 
 let workbook = null, aoa = [], colIndex = {}, unitsRow = [], sheetNames = [], detectedParams = [];
 
+// Alias reconocidos por TÍTULO de columna (nunca por posición/índice fijo). Los archivos de
+// campo no tienen una estructura uniforme entre sí, así que la detección se basa en comparar
+// el título normalizado (trim + minúsculas + sin acentos, ver LabUtils.normalizeHeader) contra
+// esta lista. Columnas cuyo título no calza con ningún alias de aquí se ignoran (no aparecen
+// como parámetro seleccionable). PMA y PMB se mantienen separados a propósito: si se
+// colapsaran en un solo "PM" genérico, un archivo que traiga ambas columnas perdería una de
+// las dos en silencio. PWR/Voltage no se incluyen: no se usan en este ensayo.
+const HEADER_ALIASES = {
+  Date: ['date', 'fecha'],
+  Time: ['time', 'hora'],
+  CO: ['co'],
+  CO2: ['co2'],
+  NO2: ['no2'],
+  O3: ['o3'],
+  PMA: ['pma'],
+  PMB: ['pmb'],
+  PM: ['pm10', 'pm2.5', 'pm2,5', 'material particulado', 'pm'],
+  RH: ['rh', 'humedad'],
+  SO2: ['so2'],
+  Temp: ['tmpc', 'temp', 'temperatura'],
+};
+const DATE_TIME_TITLES = ['date', 'fecha', 'time', 'hora'];
+const HEADER_SEARCH_ROWS = 5;
+
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
 const fname = document.getElementById('fname');
@@ -46,11 +70,11 @@ async function handleFile(file) {
 
   sheetSelect.innerHTML = sheetNames.map(n => `<option value="${n}">${n}</option>`).join('');
   sheetRow.style.display = 'flex';
-  loadSheet(sheetNames[0]);
+  loadSheet(sheetNames[0], true);
 }
 
-sheetSelect.addEventListener('change', () => loadSheet(sheetSelect.value));
-startRowInput.addEventListener('change', () => loadSheet(sheetSelect.value));
+sheetSelect.addEventListener('change', () => loadSheet(sheetSelect.value, true));
+startRowInput.addEventListener('change', () => loadSheet(sheetSelect.value, false));
 
 // Limpia el panel de resumen y deshabilita los pasos 2/3, para que no queden datos
 // de una hoja o archivo anterior visibles mientras se evalúa la hoja recién elegida.
@@ -64,7 +88,10 @@ function disableSteps() {
   genErr.textContent = '';
 }
 
-function loadSheet(name) {
+// autoStartRow: true cuando se carga un archivo/hoja nuevo (recalcula "Fila donde inician
+// los datos" a partir del encabezado detectado); false cuando el usuario mismo editó ese
+// campo (se respeta el valor que escribió, sin pisarlo).
+function loadSheet(name, autoStartRow) {
   loadErr.textContent = '';
   disableSteps();
 
@@ -82,23 +109,40 @@ function loadSheet(name) {
 
   if (!aoa || aoa.length < 3) { loadErr.textContent = 'Esta hoja no tiene suficientes filas.'; return; }
 
-  const headerRow = aoa[0] || [];
-  unitsRow = aoa[1] || [];
-  colIndex = LabUtils.buildColIndex(headerRow);
+  // La fila de encabezado se BUSCA por título (Date/Fecha/Time/Hora), nunca se asume que
+  // es la fila 1 — los archivos de campo no tienen una estructura uniforme entre sí.
+  const headerRowIdx = LabUtils.findHeaderRow(aoa, DATE_TIME_TITLES, HEADER_SEARCH_ROWS);
+  if (headerRowIdx === -1) {
+    loadErr.textContent = `No se encontró una fila de encabezado con columna "Date"/"Fecha" u "Time"/"Hora" en las primeras ${HEADER_SEARCH_ROWS} filas de esta hoja. Verifica que sea el formato esperado.`;
+    return;
+  }
 
-  if (!('Date' in colIndex) || !('Time' in colIndex)) {
-    loadErr.textContent = 'No se encontraron columnas "Date" y "Time" en la fila 1 de esta hoja. Verifica que sea el formato esperado.';
+  const headerRow = aoa[headerRowIdx] || [];
+  unitsRow = aoa[headerRowIdx + 1] || []; // fila justo debajo del encabezado (unidades) — se ignora como fila de datos
+  colIndex = LabUtils.buildColIndexByAlias(headerRow, HEADER_ALIASES);
+
+  const missing = [];
+  if (!('Date' in colIndex)) missing.push('Date/Fecha');
+  if (!('Time' in colIndex)) missing.push('Time/Hora');
+  if (missing.length) {
+    loadErr.textContent = `No se encontró columna de ${missing.join(' ni ')} en el encabezado detectado (fila ${headerRowIdx + 1}).`;
     return;
   }
 
   detectedParams = Object.keys(colIndex).filter(n => n !== 'Date' && n !== 'Time');
 
-  const startRow1based = parseInt(startRowInput.value, 10) || 3;
+  // Fila de datos por defecto = encabezado + fila de unidades + 1. Se autocompleta al cargar
+  // un archivo/hoja nuevo, pero sigue siendo editable: si el usuario la ajusta a mano, ese
+  // valor se respeta (ver el listener de startRowInput más arriba).
+  const defaultStartRow1based = headerRowIdx + 3;
+  if (autoStartRow) startRowInput.value = defaultStartRow1based;
+  const startRow1based = parseInt(startRowInput.value, 10) || defaultStartRow1based;
   const startIdx0 = startRow1based - 1;
   const blocks = detectBlocks(startIdx0);
 
+  const mapping = Object.keys(colIndex).map(k => `${k}=col ${colIndex[k] + 1}`).join(', ');
   readout.classList.add('on');
-  readout.innerHTML = `<b>Hoja:</b> ${name} &nbsp;&middot;&nbsp; <b>Columnas detectadas:</b> ${Object.keys(colIndex).length} &nbsp;&middot;&nbsp; <b>Parámetros disponibles:</b> ${detectedParams.length}<br><b>Intervalos (bloques 12+1) detectados:</b> ${blocks.length} &nbsp;&middot;&nbsp; <b>Inicio de datos:</b> fila ${startRow1based}`;
+  readout.innerHTML = `<b>Hoja:</b> ${name} &nbsp;&middot;&nbsp; <b>Fila de encabezado:</b> ${headerRowIdx + 1} &nbsp;&middot;&nbsp; <b>Columnas detectadas:</b> ${Object.keys(colIndex).length} &nbsp;&middot;&nbsp; <b>Parámetros disponibles:</b> ${detectedParams.length}<br><b>Intervalos (bloques 12+1) detectados:</b> ${blocks.length} &nbsp;&middot;&nbsp; <b>Inicio de datos:</b> fila ${startRow1based}<br><b>Mapeo título → columna:</b> ${mapping}`;
 
   renderParamsTable();
   paramsBody.classList.remove('disabled');

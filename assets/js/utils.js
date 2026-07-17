@@ -44,13 +44,71 @@ const LabUtils = (function () {
     return XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
   }
 
-  // A partir de la fila de encabezados, arma {nombreColumna: indice}
-  function buildColIndex(headerRow) {
+  // Igual que attachDropzone, pero para ensayos que necesitan varios archivos a la vez
+  // (ej. un archivo por eje X/Y/Z). onFiles recibe un array de File.
+  function attachMultiDropzone(dropzoneEl, fileInputEl, onFiles) {
+    dropzoneEl.addEventListener('click', () => fileInputEl.click());
+    dropzoneEl.addEventListener('dragover', e => { e.preventDefault(); dropzoneEl.classList.add('drag'); });
+    dropzoneEl.addEventListener('dragleave', () => dropzoneEl.classList.remove('drag'));
+    dropzoneEl.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzoneEl.classList.remove('drag');
+      if (e.dataTransfer.files.length) onFiles(Array.from(e.dataTransfer.files));
+    });
+    fileInputEl.addEventListener('change', e => {
+      if (e.target.files.length) onFiles(Array.from(e.target.files));
+    });
+  }
+
+  // Parsea un encabezado numérico (ej. una banda de frecuencia) tolerando coma o punto
+  // decimal y texto alrededor ("31,5", "31.5 Hz"...). Devuelve un number o null si la
+  // celda no empieza con un número.
+  function parseNumericHeader(v) {
+    if (v === null || v === undefined) return null;
+    if (typeof v === 'number') return v;
+    const m = String(v).trim().replace(',', '.').match(/^(\d+(\.\d+)?)/);
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  // Normaliza un título de columna para comparar por contenido, no por posición:
+  // trim, minúsculas, sin acentos. Así "Time ", "TIME", "Tiempo"/"Hora" con distinto
+  // formato no rompen la detección por una diferencia trivial de formato.
+  function normalizeHeader(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+
+  // Busca, entre las primeras maxRows filas de aoa, la primera que contenga al menos una
+  // celda cuyo título normalizado esté en matchTitles (array de strings ya normalizados).
+  // Nunca asume que el encabezado está en una fila fija. Devuelve el índice de fila
+  // (0-based) o -1 si no se encontró en el rango buscado.
+  function findHeaderRow(aoa, matchTitles, maxRows) {
+    const wanted = new Set(matchTitles);
+    const limit = Math.min(maxRows || 5, aoa.length);
+    for (let r = 0; r < limit; r++) {
+      const row = aoa[r] || [];
+      for (let c = 0; c < row.length; c++) {
+        if (wanted.has(normalizeHeader(row[c]))) return r;
+      }
+    }
+    return -1;
+  }
+
+  // A partir de una fila de encabezado y un mapa {nombreCanónico: [alias, ...]}, arma
+  // {nombreCanónico: índiceDeColumna} comparando títulos normalizados (nunca posición/índice
+  // fijo). Columnas cuyo título no calza con ningún alias se ignoran. Si dos columnas del
+  // archivo calzan con el mismo nombre canónico, gana la primera (izquierda a derecha).
+  function buildColIndexByAlias(headerRow, aliasMap) {
+    const aliasToCanonical = {};
+    Object.keys(aliasMap).forEach(canonical => {
+      aliasMap[canonical].forEach(alias => { aliasToCanonical[normalizeHeader(alias)] = canonical; });
+    });
     const colIndex = {};
     (headerRow || []).forEach((h, i) => {
-      if (h !== null && h !== undefined && String(h).trim() !== '') {
-        colIndex[String(h).trim()] = i;
-      }
+      const norm = normalizeHeader(h);
+      if (norm === '') return;
+      const canonical = aliasToCanonical[norm];
+      if (canonical && !(canonical in colIndex)) colIndex[canonical] = i;
     });
     return colIndex;
   }
@@ -128,8 +186,9 @@ const LabUtils = (function () {
   }
 
   return {
-    attachDropzone, readWorkbook, sheetToAOA, buildColIndex, toTimeParts,
-    fmtDate, fmtTime, fmtNum, styleHeaderRow, styleTotalRow,
+    attachDropzone, attachMultiDropzone, readWorkbook, sheetToAOA,
+    normalizeHeader, findHeaderRow, buildColIndexByAlias, parseNumericHeader,
+    toTimeParts, fmtDate, fmtTime, fmtNum, styleHeaderRow, styleTotalRow,
     downloadWorkbook, addTraceabilitySheet
   };
 })();

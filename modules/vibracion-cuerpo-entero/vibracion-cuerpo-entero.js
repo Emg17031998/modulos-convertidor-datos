@@ -5,7 +5,7 @@
 // Marca de versión — visible en la consola del navegador (F12 → Console) al cargar la página.
 // Sirve para confirmar que el navegador está corriendo este archivo y no una copia en caché:
 // si tras un cambio no aparece la fecha/nota esperada acá, el navegador no recargó el script.
-console.log('[VCE] vibracion-cuerpo-entero.js cargado — versión 2026-09-25b (k fijo ISO 1,4/1,4/1,0 y límites Z corregidos)');
+console.log('[VCE] vibracion-cuerpo-entero.js cargado — versión 2026-09-25d (formato del Word: altos de fila, sin amarillo, hora 12 h, duración en minutos)');
 //
 // Modelo: un área/medición por cálculo (igual que vibracion-mano-brazo.js) — se carga un .xlsx
 // del equipo HVM200 (o se tipea/pega manualmente) con las 20 lecturas de aceleración RMS por
@@ -186,10 +186,12 @@ function matchBandIndex(freq) {
 
 // Convierte una celda de hora/duración (Date, fracción de día, o texto "hh:mm:ss") a segundos.
 // Sirve tanto para Resumen!B26 (duración) como para una celda de Hora de una fila de datos
-// (hora del día) — en ambos casos es la misma extracción de h:m:s.
+// (hora del día) — en ambos casos es la misma extracción de h:m:s. Con cellDates:true SheetJS
+// arma el Date en hora LOCAL: leerlo con getUTC* corría el resultado varias horas (en Panamá,
+// UTC-5, una duración de 3 min se leía como 5:22:36).
 function horaASegundos(v) {
   if (v === null || v === undefined) return null;
-  if (v instanceof Date) return v.getUTCHours() * 3600 + v.getUTCMinutes() * 60 + v.getUTCSeconds() + v.getUTCMilliseconds() / 1000;
+  if (v instanceof Date) return v.getHours() * 3600 + v.getMinutes() * 60 + v.getSeconds() + v.getMilliseconds() / 1000;
   if (typeof v === 'number') return v * 24 * 3600;
   const m = String(v).trim().match(/^(\d+):(\d+)(?::(\d+(?:[.,]\d+)?))?/);
   if (!m) return null;
@@ -408,6 +410,7 @@ const RESUMEN_ETIQUETAS = {
   modoFuncionamiento: ['modo de funcionamiento', 'modo funcionamiento', 'operating mode'],
   promedio: ['promedio', 'average', 'averaging time'],
   tiempoEjecucion: ['tiempo de ejecucion', 'tiempo de ejecución', 'run time', 'duracion de la medicion', 'duración de la medición'],
+  tiempoInicio: ['tiempo de inicio', 'hora de inicio', 'start time'],
   factoresK: ['factores k', 'factor k', 'k factors', 'k-factor', 'k factor'],
   aRMS: ['arms', 'a rms', 'aceleracion rms', 'aceleración rms'],
   a8Equipo: ['a(8)', 'a (8)', 'a8']
@@ -430,20 +433,25 @@ function readResumenMeta(workbook) {
   const sheetName = workbook.SheetNames.find(n => normalizarTexto(n) === 'resumen');
   if (!sheetName) return null;
   const aoa = LabUtils.sheetToAOA(workbook, sheetName);
+  // Misma hoja, pero con el texto tal como lo muestra Excel. Los campos de hora/duración se toman
+  // de acá: convertir la celda a Date (cellDates:true) mete desfases de zona horaria (hasta 36 s
+  // en fechas actuales en Panamá), mientras que el texto formateado es exacto.
+  const aoaTexto = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: null, raw: false });
 
   // Valor de la columna col (0=A, 1=B, 2=C, 3=D) de la fila donde se encontró la etiqueta dada.
   // null si la etiqueta no aparece en la hoja — nunca se adivina una fila por defecto.
-  const valorEnFila = (etiquetaKey, col) => {
+  const valorEnFila = (etiquetaKey, col, fuente) => {
     const fila = encontrarFilaPorEtiqueta(aoa, RESUMEN_ETIQUETAS[etiquetaKey]);
     if (fila === -1) return null;
-    const v = (aoa[fila] || [])[col];
+    const v = ((fuente || aoa)[fila] || [])[col];
     return v === undefined ? null : v;
   };
 
   return {
     modoFuncionamiento: valorEnFila('modoFuncionamiento', 1),
-    promedio: valorEnFila('promedio', 1),
-    tiempoEjecucion: valorEnFila('tiempoEjecucion', 1),
+    promedio: valorEnFila('promedio', 1, aoaTexto),
+    tiempoEjecucion: valorEnFila('tiempoEjecucion', 1, aoaTexto),
+    tiempoInicio: valorEnFila('tiempoInicio', 1, aoaTexto),
     factoresK: {
       X: LabUtils.parseLocaleNumber(valorEnFila('factoresK', 1)),
       Y: LabUtils.parseLocaleNumber(valorEnFila('factoresK', 2)),
@@ -473,6 +481,9 @@ const importWarn = document.getElementById('importWarn');
 // retenidas en memoria para poder recalcular la grilla al instante cuando cambia el switch de
 // método sin volver a leer el archivo. null si nunca se importó un archivo (entrada manual/pegado).
 let lastImportSamples = null;
+// Metadata de la hoja Resumen del último archivo importado (hora de inicio, duración, etc.), para
+// completar el encabezado del reporte Word. null si no se importó ningún archivo.
+let lastImportMeta = null;
 const METODO_DEFAULT = 'promedio';
 let metodoActual = METODO_DEFAULT;
 
@@ -526,6 +537,7 @@ async function handleFile(file) {
     }
 
     lastImportSamples = samples;
+    lastImportMeta = meta;
     aplicarMetodoAGrid();
 
     if (meta) {
@@ -571,6 +583,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   importWarn.textContent = '';
   AXES.forEach(axis => cells[axis].forEach(inp => { inp.value = ''; }));
   lastImportSamples = null;
+  lastImportMeta = null;
   metodoActual = METODO_DEFAULT;
   document.querySelectorAll('.vce-segmented-btn').forEach(b => b.classList.toggle('active', b.dataset.method === METODO_DEFAULT));
   tiempoInput.value = '';
@@ -613,7 +626,35 @@ function calculate(tiempoMin) {
     axisSummary[axis] = { exceedCount, worstBand: worst.band, worstRatio: worst.ratio };
   });
 
-  return { rows, axisSummary, area: areaInput.value.trim() || '(sin nombre)', tiempoMin, datos, method: metodoActual };
+  const horaMedicion = lastImportMeta ? horaEn12h(lastImportMeta.tiempoInicio) : '';
+  const duracionMedicion = lastImportMeta ? duracionEnMinutos(lastImportMeta.tiempoEjecucion) : '';
+
+  return {
+    rows, axisSummary, area: areaInput.value.trim() || '(sin nombre)', tiempoMin, datos, method: metodoActual,
+    horaMedicion, duracionMedicion
+  };
+}
+
+// "Tiempo de inicio" del archivo (texto como lo muestra Excel, con o sin fecha, en 24 h o con
+// AM/PM) → "hh:mm a. m." / "hh:mm p. m.", como en el informe del laboratorio. '' si no se entiende.
+function horaEn12h(texto) {
+  const m = String(texto || '').match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*([ap])?\.?\s*m?\.?/i);
+  if (!m) return '';
+  let h = parseInt(m[1], 10);
+  const sufijo = m[3] ? m[3].toLowerCase() : null;
+  if (sufijo === 'p' && h < 12) h += 12;
+  if (sufijo === 'a' && h === 12) h = 0;
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return String(h12).padStart(2, '0') + ':' + m[2] + (h < 12 ? ' a. m.' : ' p. m.');
+}
+
+// "Tiempo de ejecución" del archivo (duración de la medición, ej. "00:03:00") → "3 minutos".
+function duracionEnMinutos(texto) {
+  const seg = horaASegundos(texto);
+  if (seg === null) return '';
+  const min = Math.round((seg / 60) * 10) / 10;
+  const numero = Number.isInteger(min) ? String(min) : min.toFixed(1).replace('.', ',');
+  return numero + (min === 1 ? ' minuto' : ' minutos');
 }
 
 function fmtHMS(totalMinutos) {
@@ -635,6 +676,7 @@ const totalExposureEl = document.getElementById('totalExposure');
 const resultsTable = document.getElementById('resultsTable');
 const exportCsvBtn = document.getElementById('exportCsvBtn');
 const exportXlsxBtn = document.getElementById('exportXlsxBtn');
+const exportWordBtn = document.getElementById('exportWordBtn');
 const staleWarnEl = document.getElementById('staleWarn');
 
 let lastResult = null;
@@ -825,4 +867,131 @@ exportXlsxBtn.addEventListener('click', () => {
   XLSX.utils.book_append_sheet(wb, traceWs, 'Trazabilidad');
 
   XLSX.writeFile(wb, 'Vibracion_Cuerpo_Entero_VCE.xlsx');
+});
+
+// --- Exportación a Word (.docx) ---
+// Replica el cuadro que usa el laboratorio en el informe: encabezado, hora/duración de la medición,
+// tabla de 20 bandas × 3 ejes (medido y límite DGNTI-COPANIT), pie con Área y tiempo de exposición,
+// y fila de Observación. Es una tabla de Word normal (no un Excel incrustado), generada en el
+// navegador con la librería docx (cargada por CDN en index.html). Solo vuelca lastResult — no
+// recalcula nada.
+
+const WORD_FUENTE = 'Arial';
+const WORD_TAMANO = 18; // medios puntos → 9 pt
+const WORD_COLOR = { verde: 'CCFFCC', gris: 'C0C0C0', rojo: 'FF0000' };
+// Anchos de columna en twips (1/20 pt): frecuencia + 3 ejes × (medido, límite). Total 9360 = 16,5 cm.
+const WORD_COLUMNAS = [1500, 1310, 1310, 1310, 1310, 1310, 1310];
+// Alto fijo de cada fila, en puntos: misma proporción que la plantilla del laboratorio, redondeada
+// a números pares (la plantilla tiene 14,25 / 41,4 / 13,8…).
+const WORD_ALTO_PT = {
+  titulo: 14, identificacion: 18, horaDuracion: 18,
+  encabezadoEje: 52, tiempoExposicion: 12, ochoHoras: 14, medidoLimite: 42,
+  banda: 14,
+  leyendaAreas: 14, etiquetasArea: 26, valoresArea: 14, observacion: 34
+};
+
+function numeroComa(v, decimales) {
+  return v.toFixed(decimales).replace('.', ',');
+}
+
+function construirDocumentoWord(res) {
+  const { Document, Table, TableRow, TableCell, Paragraph, TextRun, WidthType, ShadingType,
+    AlignmentType, VerticalAlign, BorderStyle, TableLayoutType, HeightRule } = docx;
+
+  // Fila con alto exacto (en puntos; Word lo guarda en twips = pt × 20).
+  const fila = (altoPt, children) => new TableRow({ children, height: { value: altoPt * 20, rule: HeightRule.EXACT } });
+
+  const texto = (t, o = {}) => new TextRun({
+    text: t, font: WORD_FUENTE, size: WORD_TAMANO, bold: o.bold, color: o.color, superScript: o.sup,
+    break: o.saltoAntes ? 1 : undefined
+  });
+  // contenido: string, o array de TextRun para mezclar negrita/superíndice en la misma celda.
+  const celda = (contenido, o = {}) => new TableCell({
+    children: [new Paragraph({
+      alignment: o.align || AlignmentType.CENTER,
+      children: Array.isArray(contenido) ? contenido : [texto(contenido, o)]
+    })],
+    columnSpan: o.span,
+    rowSpan: o.rowSpan,
+    shading: o.fill ? { type: ShadingType.CLEAR, color: 'auto', fill: o.fill } : undefined,
+    verticalAlign: VerticalAlign.CENTER,
+    borders: o.borders,
+    // Sin margen arriba/abajo: con alto exacto de fila, el margen le restaría espacio al texto (las
+    // filas de 12 pt apenas alcanzan para una línea de 9 pt).
+    margins: { top: 0, bottom: 0, left: 60, right: 60 }
+  });
+
+  // Celdas de relleno del pie (a los lados de Área / Tiempo): sin bordes internos, conservando el
+  // borde exterior izquierdo/derecho de la tabla, como en el cuadro de referencia.
+  const NINGUNO = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
+  const rellenoIzq = { top: NINGUNO, bottom: NINGUNO, right: NINGUNO };
+  const rellenoMedio = { top: NINGUNO, bottom: NINGUNO, left: NINGUNO, right: NINGUNO };
+  const rellenoDer = { top: NINGUNO, bottom: NINGUNO, left: NINGUNO };
+
+  const encabezadoEje = eje => celda(
+    [texto(`Aceleración en ${eje} `, { bold: true }), texto('(m/s'), texto('2', { sup: true }), texto(')')],
+    { span: 2 }
+  );
+
+  const A = WORD_ALTO_PT;
+  const filas = [
+    fila(A.titulo, [celda('Los resultados de las mediciones de vibración para una exposición diaria de cuerpo entero en ocho horas son:', { span: 7, align: AlignmentType.LEFT })]),
+    fila(A.identificacion, [celda('Xxxxxxxxxxxxxxxx, xxxxxxxxx', { span: 7, color: WORD_COLOR.rojo, align: AlignmentType.LEFT })]),
+    fila(A.horaDuracion, [
+      celda([texto('Hora de la medición: ', { bold: true }), texto(res.horaMedicion)], { span: 3, align: AlignmentType.LEFT }),
+      celda('Duración de la medición:', { span: 2, fill: WORD_COLOR.verde, bold: true }),
+      celda(res.duracionMedicion, { span: 2 })
+    ]),
+    fila(A.encabezadoEje, [celda('Frecuencia media de la banda terciaria (Hz)', { bold: true, rowSpan: 4 }), ...AXES.map(encabezadoEje)]),
+    fila(A.tiempoExposicion, AXES.map(() => celda('Tiempo de exposición diaria', { bold: true, span: 2 }))),
+    fila(A.ochoHoras, AXES.map(() => celda('(8 horas)', { span: 2 }))),
+    fila(A.medidoLimite, AXES.flatMap(() => [
+      celda('Medido', { bold: true }),
+      celda([texto('DGNTI-', { bold: true }), texto('COPANIT', { bold: true, saltoAntes: true }), texto('45-2000', { bold: true, saltoAntes: true })])
+    ]))
+  ];
+
+  res.rows.forEach(r => {
+    filas.push(fila(A.banda, [
+      celda(String(r.band).replace('.', ','), { bold: true }),
+      ...AXES.flatMap(axis => [celda(numeroComa(r[axis].medido, 3)), celda(numeroComa(r[axis].limite, 3), { bold: true })])
+    ]));
+  });
+
+  const area = res.area === '(sin nombre)' ? '' : res.area;
+  filas.push(
+    fila(A.leyendaAreas, [celda('Los resultados fueron obtenidos tomando en cuenta el tiempo de exposición en las siguientes áreas:', { span: 7 })]),
+    fila(A.etiquetasArea, [
+      celda('', { borders: rellenoIzq }),
+      celda('Área', { span: 2, fill: WORD_COLOR.gris, bold: true }),
+      celda('', { borders: rellenoMedio }),
+      celda('Tiempo de exposición (minutos)', { span: 2, fill: WORD_COLOR.gris, bold: true }),
+      celda('', { borders: rellenoDer })
+    ]),
+    fila(A.valoresArea, [
+      celda('', { borders: rellenoIzq }),
+      celda(area, { span: 2 }),
+      celda('', { borders: rellenoMedio }),
+      celda(String(res.tiempoMin), { span: 2 }),
+      celda('', { borders: rellenoDer })
+    ]),
+    fila(A.observacion, [celda('Observación:', { span: 7, bold: true, align: AlignmentType.LEFT })])
+  );
+
+  const tabla = new Table({
+    rows: filas,
+    columnWidths: WORD_COLUMNAS,
+    width: { size: WORD_COLUMNAS.reduce((a, b) => a + b, 0), type: WidthType.DXA },
+    layout: TableLayoutType.FIXED
+  });
+
+  return new Document({
+    sections: [{ properties: { page: { margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } }, children: [tabla] }]
+  });
+}
+
+exportWordBtn.addEventListener('click', async () => {
+  if (!lastResult) return;
+  const blob = await docx.Packer.toBlob(construirDocumentoWord(lastResult));
+  LabUtils.downloadBlob(blob, 'Vibracion_Cuerpo_Entero_VCE.docx');
 });

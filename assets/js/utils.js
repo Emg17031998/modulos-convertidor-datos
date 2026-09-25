@@ -175,6 +175,18 @@ const LabUtils = (function () {
     URL.revokeObjectURL(url);
   }
 
+  // Descarga un Blob ya generado (ej. un .docx) con el nombre de archivo dado.
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   // Da estilo estándar (negrita + relleno azul claro) a una fila de encabezado en ExcelJS
   function styleHeaderRow(row, argb) {
     row.font = { bold: true };
@@ -222,6 +234,6 @@ const LabUtils = (function () {
     attachDropzone, attachMultiDropzone, readWorkbook, sheetToAOA,
     normalizeHeader, findHeaderRow, buildColIndexByAlias, parseNumericHeader, parseLocaleNumber,
     toTimeParts, fmtDate, fmtTime, fmtNum, styleHeaderRow, styleTotalRow,
-    downloadWorkbook, addTraceabilitySheet, downloadCSV
+    downloadWorkbook, addTraceabilitySheet, downloadCSV, downloadBlob
   };
 })();

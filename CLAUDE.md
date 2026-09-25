@@ -20,6 +20,9 @@ cálculo ocurre client-side en el navegador de quien abre la página.
   - `xlsx` (SheetJS) — lectura de archivos .xlsx.
   - `exceljs` — generación de archivos .xlsx de salida con formato (fuente/relleno de celdas,
     formatos numéricos y de fecha).
+  - `docx` 8.5.0 — generación de reportes Word (.docx) con tablas (usado por el módulo VCE). No
+    está publicada en cdnjs: se carga desde jsDelivr (`build/index.umd.js`). La v9 se sirve como
+    `application/node` y el navegador la bloquea, por eso queda fija en 8.5.0.
 - Sin TypeScript, sin React. Mantenerlo así salvo que se decida explícitamente lo contrario.
 - No hay comando de build, lint ni test: no hay `package.json` ni herramientas de compilación.
   Para desarrollar, abrir los `.html` directamente en el navegador, o servirlos con cualquier

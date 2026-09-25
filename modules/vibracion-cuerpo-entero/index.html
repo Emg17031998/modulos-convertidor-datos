@@ -10,6 +10,9 @@
 <link rel="stylesheet" href="../../assets/css/style.css">
 <link rel="stylesheet" href="vibracion-cuerpo-entero.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- docx no está publicada en cdnjs; jsDelivr sirve su build UMD como JavaScript (el build de la
+     v9 se sirve como application/node y el navegador lo bloquea por nosniff). -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 </head>
 <body class="vce-page">
 
@@ -98,12 +101,13 @@
       <div class="actions">
         <button class="ghost" id="exportXlsxBtn">Descargar resumen (.xlsx)</button>
         <button class="ghost" id="exportCsvBtn">Exportar CSV del resumen</button>
+        <button class="ghost" id="exportWordBtn">Exportar a Word</button>
       </div>
     </div>
   </div>
 </div>
 
 <script src="../../assets/js/utils.js"></script>
-<script src="vibracion-cuerpo-entero.js?v=2026-09-25b-k-iso"></script>
+<script src="vibracion-cuerpo-entero.js?v=2026-09-25d-word-formato"></script>
 </body>
 </html>

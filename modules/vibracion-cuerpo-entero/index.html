@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibración de Cuerpo Entero (VCE) · Laboratorio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<link rel="stylesheet" href="vibracion-cuerpo-entero.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="vce-page">
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="site-header-brand">
+        <a class="site-header-back" href="../../index.html">&larr; Todos los ensayos</a>
+        <h1>Vibración de Cuerpo Entero</h1>
+        <span class="site-header-sub">VCE / WBV</span>
+      </div>
+      <span class="site-header-tag">A(8h) por banda de tercio de octava · DGNTI-COPANIT 45-2000</span>
+    </div>
+  </header>
+
+<div class="wrap">
+
+  <div class="step">
+    <div class="step-head"><div class="step-num">1</div><h2>Cargar archivo</h2></div>
+    <div class="step-body">
+      <div class="field">
+        <label>Área</label>
+        <input type="text" id="areaInput" placeholder="Ej. Bodega">
+      </div>
+
+      <div class="dropzone vce-dropzone" id="dropzone">
+        <div>Arrastra el .xlsx del equipo aquí o haz clic para elegirlo</div>
+        <div class="fname" id="fname">Ningún archivo cargado</div>
+        <input type="file" id="fileInput" accept=".xlsx,.xls">
+      </div>
+      <p class="err" id="importErr"></p>
+      <p class="vce-import-warn" id="importWarn"></p>
+
+      <div class="vce-method-row">
+        <span class="vce-method-label">
+          Método de combinación por banda
+          <span class="vce-info" tabindex="0" title="Promedio: promedio aritmético de todas las filas del archivo — método oficial de reporte del laboratorio. RMS: combina las filas por energía (solo como referencia de comparación).">i</span>
+        </span>
+        <div class="vce-segmented" id="metodoSegmented">
+          <button type="button" class="vce-segmented-btn active" data-method="promedio">Promedio</button>
+          <button type="button" class="vce-segmented-btn" data-method="rms">RMS</button>
+        </div>
+      </div>
+
+      <div class="vce-grid-wrap">
+        <table class="vce-grid">
+          <thead><tr><th>Frecuencia</th><th>X (m/s²)</th><th>Y (m/s²)</th><th>Z (m/s²)</th></tr></thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <button class="ghost" id="clearBtn">Limpiar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-head"><div class="step-num">2</div><h2>Tiempo de exposición y cálculo</h2></div>
+    <div class="step-body">
+      <div class="row">
+        <div class="field">
+          <label>Tiempo de exposición real (minutos)</label>
+          <input type="number" id="tiempoInput" min="1" step="1" placeholder="Ej. 420">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" id="calcBtn" disabled>Calcular</button>
+      </div>
+      <p class="err" id="calcErr"></p>
+    </div>
+  </div>
+
+  <div class="step" id="resultsStep" style="display:none;">
+    <div class="step-head"><div class="step-num">3</div><h2>Resultados y exportación</h2></div>
+    <div class="step-body">
+
+      <div class="vce-axis-summary" id="axisSummary"></div>
+
+      <p class="vce-total" id="totalExposure"></p>
+      <p class="vce-import-warn" id="staleWarn"></p>
+
+      <div class="preview-wrap">
+        <table class="preview" id="resultsTable"></table>
+      </div>
+
+      <div class="actions">
+        <button class="ghost" id="exportXlsxBtn">Descargar resumen (.xlsx)</button>
+        <button class="ghost" id="exportCsvBtn">Exportar CSV del resumen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../assets/js/utils.js"></script>
+<script src="vibracion-cuerpo-entero.js?v=2026-09-25b-k-iso"></script>
+</body>
+</html>

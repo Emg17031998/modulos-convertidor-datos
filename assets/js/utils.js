@@ -142,6 +142,39 @@ const LabUtils = (function () {
     return typeof v === 'number' ? v.toFixed(dec) : '—';
   }
 
+  // Parsea un valor numérico completo (no solo un encabezado) tolerando coma o punto decimal
+  // español ("0,121" o "0.121"). Devuelve null si la celda está vacía o no es numérica —
+  // a diferencia de parseNumericHeader, no acepta texto sobrante alrededor del número.
+  function parseLocaleNumber(v) {
+    if (v === null || v === undefined) return null;
+    if (typeof v === 'number') return isNaN(v) ? null : v;
+    const s = String(v).trim().replace(',', '.');
+    if (s === '') return null;
+    const n = parseFloat(s);
+    return isNaN(n) || !isFinite(n) ? null : n;
+  }
+
+  // Escapa un valor para una celda CSV (comillas dobles si contiene coma, comilla o salto de línea)
+  function csvEscapeCell(v) {
+    const s = v === null || v === undefined ? '' : String(v);
+    return /["\n,]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  // Genera un .csv (UTF-8 con BOM, para que Excel detecte tildes/ñ correctamente) a partir de
+  // una lista de filas (array de arrays) y dispara la descarga en el navegador.
+  function downloadCSV(rows, filename) {
+    const csv = rows.map(row => row.map(csvEscapeCell).join(',')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   // Da estilo estándar (negrita + relleno azul claro) a una fila de encabezado en ExcelJS
   function styleHeaderRow(row, argb) {
     row.font = { bold: true };
@@ -187,8 +220,8 @@ const LabUtils = (function () {
 
   return {
     attachDropzone, attachMultiDropzone, readWorkbook, sheetToAOA,
-    normalizeHeader, findHeaderRow, buildColIndexByAlias, parseNumericHeader,
+    normalizeHeader, findHeaderRow, buildColIndexByAlias, parseNumericHeader, parseLocaleNumber,
     toTimeParts, fmtDate, fmtTime, fmtNum, styleHeaderRow, styleTotalRow,
-    downloadWorkbook, addTraceabilitySheet
+    downloadWorkbook, addTraceabilitySheet, downloadCSV
   };
 })();

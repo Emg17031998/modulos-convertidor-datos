@@ -5,7 +5,7 @@
 // Marca de versión — visible en la consola del navegador (F12 → Console) al cargar la página.
 // Sirve para confirmar que el navegador está corriendo este archivo y no una copia en caché:
 // si tras un cambio no aparece la fecha/nota esperada acá, el navegador no recargó el script.
-console.log('[VCE] vibracion-cuerpo-entero.js cargado — versión 2026-09-25d (formato del Word: altos de fila, sin amarillo, hora 12 h, duración en minutos)');
+console.log('[VCE] vibracion-cuerpo-entero.js cargado — versión 2026-09-25e (ventana "Datos del reporte": operador, equipo, hora)');
 //
 // Modelo: un área/medición por cálculo (igual que vibracion-mano-brazo.js) — se carga un .xlsx
 // del equipo HVM200 (o se tipea/pega manualmente) con las 20 lecturas de aceleración RMS por
@@ -577,6 +577,8 @@ LabUtils.attachDropzone(dropzone, fileInput, handleFile);
 
 document.getElementById('clearBtn').addEventListener('click', () => {
   areaInput.value = '';
+  repOperador.value = '';
+  repEquipo.value = '';
   fileInput.value = '';
   fname.textContent = 'Ningún archivo cargado';
   importErr.textContent = '';
@@ -699,7 +701,7 @@ calcBtn.addEventListener('click', () => {
 
   const tiempoMin = LabUtils.parseLocaleNumber(tiempoInput.value);
   if (tiempoMin === null || tiempoMin <= 0) {
-    calcErr.textContent = 'Ingresa el tiempo de exposición real (minutos).';
+    calcErr.textContent = 'Ingresa el tiempo de exposición (minutos).';
     return;
   }
   if (!gridIsComplete()) {
@@ -894,7 +896,9 @@ function numeroComa(v, decimales) {
   return v.toFixed(decimales).replace('.', ',');
 }
 
-function construirDocumentoWord(res) {
+// res: lastResult (valores calculados). datos: lo que se completó en la ventana "Datos del reporte"
+// — { operador, equipo, hora, area, tiempo } — que solo alimenta el texto del documento.
+function construirDocumentoWord(res, datos) {
   const { Document, Table, TableRow, TableCell, Paragraph, TextRun, WidthType, ShadingType,
     AlignmentType, VerticalAlign, BorderStyle, TableLayoutType, HeightRule } = docx;
 
@@ -936,9 +940,12 @@ function construirDocumentoWord(res) {
   const A = WORD_ALTO_PT;
   const filas = [
     fila(A.titulo, [celda('Los resultados de las mediciones de vibración para una exposición diaria de cuerpo entero en ocho horas son:', { span: 7, align: AlignmentType.LEFT })]),
-    fila(A.identificacion, [celda('Xxxxxxxxxxxxxxxx, xxxxxxxxx', { span: 7, color: WORD_COLOR.rojo, align: AlignmentType.LEFT })]),
+    fila(A.identificacion, [celda([
+      texto('Operador: ', { bold: true }), texto(datos.operador),
+      texto('   Equipo: ', { bold: true }), texto(datos.equipo)
+    ], { span: 7, align: AlignmentType.LEFT })]),
     fila(A.horaDuracion, [
-      celda([texto('Hora de la medición: ', { bold: true }), texto(res.horaMedicion)], { span: 3, align: AlignmentType.LEFT }),
+      celda([texto('Hora de la medición: ', { bold: true }), texto(datos.hora, { bold: true })], { span: 3, align: AlignmentType.LEFT }),
       celda('Duración de la medición:', { span: 2, fill: WORD_COLOR.verde, bold: true }),
       celda(res.duracionMedicion, { span: 2 })
     ]),
@@ -958,7 +965,6 @@ function construirDocumentoWord(res) {
     ]));
   });
 
-  const area = res.area === '(sin nombre)' ? '' : res.area;
   filas.push(
     fila(A.leyendaAreas, [celda('Los resultados fueron obtenidos tomando en cuenta el tiempo de exposición en las siguientes áreas:', { span: 7 })]),
     fila(A.etiquetasArea, [
@@ -970,9 +976,9 @@ function construirDocumentoWord(res) {
     ]),
     fila(A.valoresArea, [
       celda('', { borders: rellenoIzq }),
-      celda(area, { span: 2 }),
+      celda(datos.area, { span: 2 }),
       celda('', { borders: rellenoMedio }),
-      celda(String(res.tiempoMin), { span: 2 }),
+      celda(datos.tiempo, { span: 2 }),
       celda('', { borders: rellenoDer })
     ]),
     fila(A.observacion, [celda('Observación:', { span: 7, bold: true, align: AlignmentType.LEFT })])
@@ -990,8 +996,71 @@ function construirDocumentoWord(res) {
   });
 }
 
-exportWordBtn.addEventListener('click', async () => {
+// --- Ventana "Datos del reporte" ---
+// Operador, Equipo y Hora de la medición no intervienen en ningún cálculo: solo completan el Word.
+// Por eso se piden recién al exportar, en una ventana aparte, en vez de mezclarlos con los campos
+// de las secciones 1 y 2. Área y Tiempo de Exposición llegan prellenados con lo usado en el cálculo
+// y se pueden ajustar solo para el texto del reporte (la tabla no se recalcula).
+const reporteDialog = document.getElementById('reporteDialog');
+const reporteForm = document.getElementById('reporteForm');
+const repOperador = document.getElementById('repOperador');
+const repEquipo = document.getElementById('repEquipo');
+const repHora = document.getElementById('repHora');
+const repMin = document.getElementById('repMin');
+const repPeriodo = document.getElementById('repPeriodo');
+const repArea = document.getElementById('repArea');
+const repTiempo = document.getElementById('repTiempo');
+const repTiempoAviso = document.getElementById('repTiempoAviso');
+
+(function llenarSelectoresHora() {
+  const opciones = (desde, hasta) => {
+    let html = '<option value="">--</option>';
+    for (let n = desde; n <= hasta; n++) html += `<option value="${String(n).padStart(2, '0')}">${String(n).padStart(2, '0')}</option>`;
+    return html;
+  };
+  repHora.innerHTML = opciones(1, 12);
+  repMin.innerHTML = opciones(0, 59);
+})();
+
+// "hh:mm a. m." / "hh:mm p. m." a partir de los selectores. '' si no se eligió la hora.
+function horaDelReporte() {
+  if (!repHora.value) return '';
+  return `${repHora.value}:${repMin.value || '00'} ${repPeriodo.value}`;
+}
+
+function actualizarAvisoTiempo() {
+  const t = LabUtils.parseLocaleNumber(repTiempo.value);
+  repTiempoAviso.textContent = lastResult && t !== null && t !== lastResult.tiempoMin
+    ? `La tabla se calculó con ${lastResult.tiempoMin} min; este valor solo cambia el texto del reporte. Para recalcular, cámbialo en la sección 2 y presiona Calcular.`
+    : '';
+}
+repTiempo.addEventListener('input', actualizarAvisoTiempo);
+
+exportWordBtn.addEventListener('click', () => {
   if (!lastResult) return;
-  const blob = await docx.Packer.toBlob(construirDocumentoWord(lastResult));
+  // Hora sugerida: la del archivo (ya en formato "hh:mm a. m."), si la trajo.
+  const sugerida = lastResult.horaMedicion.match(/^(\d{2}):(\d{2}) ([ap]\. m\.)$/);
+  repHora.value = sugerida ? sugerida[1] : '';
+  repMin.value = sugerida ? sugerida[2] : '';
+  repPeriodo.value = sugerida ? sugerida[3] : 'a. m.';
+  repArea.value = lastResult.area === '(sin nombre)' ? '' : lastResult.area;
+  repTiempo.value = lastResult.tiempoMin;
+  actualizarAvisoTiempo();
+  reporteDialog.showModal();
+});
+
+document.getElementById('repCancelar').addEventListener('click', () => reporteDialog.close());
+
+reporteForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const datos = {
+    operador: repOperador.value.trim(),
+    equipo: repEquipo.value.trim(),
+    hora: horaDelReporte(),
+    area: repArea.value.trim(),
+    tiempo: repTiempo.value.trim()
+  };
+  const blob = await docx.Packer.toBlob(construirDocumentoWord(lastResult, datos));
   LabUtils.downloadBlob(blob, 'Vibracion_Cuerpo_Entero_VCE.docx');
+  reporteDialog.close();
 });

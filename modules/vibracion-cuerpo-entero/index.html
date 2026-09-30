@@ -32,11 +32,6 @@
   <div class="step">
     <div class="step-head"><div class="step-num">1</div><h2>Cargar archivo</h2></div>
     <div class="step-body">
-      <div class="field">
-        <label>Área</label>
-        <input type="text" id="areaInput" placeholder="Ej. Bodega">
-      </div>
-
       <div class="dropzone vce-dropzone" id="dropzone">
         <div>Arrastra el .xlsx del equipo aquí o haz clic para elegirlo</div>
         <div class="fname" id="fname">Ningún archivo cargado</div>
@@ -70,14 +65,44 @@
   </div>
 
   <div class="step">
-    <div class="step-head"><div class="step-num">2</div><h2>Tiempo de exposición y cálculo</h2></div>
+    <div class="step-head"><div class="step-num">2</div><h2>Datos del reporte y cálculo</h2></div>
     <div class="step-body">
-      <div class="row">
+      <h3 class="vce-form-grupo">Medición</h3>
+      <div class="vce-form-grid">
         <div class="field">
-          <label>Tiempo de Exposición (minutos)</label>
+          <label for="operadorInput">Operador</label>
+          <input type="text" id="operadorInput" placeholder="Ej. Andrés González">
+        </div>
+        <div class="field">
+          <label for="equipoInput">Equipo</label>
+          <input type="text" id="equipoInput" placeholder="Ej. Retroexcavadora CAT, modelo 425E">
+        </div>
+        <div class="field">
+          <label for="horaSel">Hora de la medición</label>
+          <div class="vce-hora">
+            <select id="horaSel" aria-label="Hora"></select>
+            <span>:</span>
+            <select id="minSel" aria-label="Minutos"></select>
+            <select id="periodoSel" aria-label="a. m. / p. m.">
+              <option value="a. m.">a. m.</option>
+              <option value="p. m.">p. m.</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="vce-form-grupo">Área y exposición</h3>
+      <div class="vce-form-grid">
+        <div class="field">
+          <label for="areaInput">Área</label>
+          <input type="text" id="areaInput" placeholder="Ej. Bodega">
+        </div>
+        <div class="field">
+          <label for="tiempoInput">Tiempo de Exposición (minutos)</label>
           <input type="number" id="tiempoInput" min="1" step="1" placeholder="Ej. 420">
         </div>
       </div>
+
       <div class="actions">
         <button class="primary" id="calcBtn" disabled>Calcular</button>
       </div>
@@ -107,55 +132,7 @@
   </div>
 </div>
 
-<dialog class="vce-dialog" id="reporteDialog">
-  <form id="reporteForm">
-    <h2>Datos del reporte</h2>
-
-    <h3>Medición</h3>
-    <div class="vce-dialog-grid">
-      <div class="field">
-        <label for="repOperador">Operador</label>
-        <input type="text" id="repOperador" placeholder="Ej. Andrés González">
-      </div>
-      <div class="field">
-        <label for="repEquipo">Equipo</label>
-        <input type="text" id="repEquipo" placeholder="Ej. Retroexcavadora CAT, modelo 425E">
-      </div>
-      <div class="field">
-        <label for="repHora">Hora de la medición</label>
-        <div class="vce-hora">
-          <select id="repHora" aria-label="Hora"></select>
-          <span>:</span>
-          <select id="repMin" aria-label="Minutos"></select>
-          <select id="repPeriodo" aria-label="a. m. / p. m.">
-            <option value="a. m.">a. m.</option>
-            <option value="p. m.">p. m.</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <h3>Área y exposición</h3>
-    <div class="vce-dialog-grid">
-      <div class="field">
-        <label for="repArea">Área</label>
-        <input type="text" id="repArea">
-      </div>
-      <div class="field">
-        <label for="repTiempo">Tiempo de Exposición (minutos)</label>
-        <input type="number" id="repTiempo" min="1" step="1">
-      </div>
-    </div>
-    <p class="vce-import-warn" id="repTiempoAviso"></p>
-
-    <div class="actions">
-      <button type="button" class="ghost" id="repCancelar">Cancelar</button>
-      <button type="submit" class="primary">Generar documento</button>
-    </div>
-  </form>
-</dialog>
-
 <script src="../../assets/js/utils.js"></script>
-<script src="vibracion-cuerpo-entero.js?v=2026-09-25e-datos-reporte"></script>
+<script src="vibracion-cuerpo-entero.js?v=2026-09-30-campos-seccion2"></script>
 </body>
 </html>

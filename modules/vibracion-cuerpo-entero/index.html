@@ -32,22 +32,23 @@
   <div class="step">
     <div class="step-head"><div class="step-num">1</div><h2>Cargar archivo</h2></div>
     <div class="step-body">
-      <div class="dropzone vce-dropzone" id="dropzone">
+      <div class="dropzone" id="dropzone">
         <div>Arrastra el .xlsx del equipo aquí o haz clic para elegirlo</div>
         <div class="fname" id="fname">Ningún archivo cargado</div>
         <input type="file" id="fileInput" accept=".xlsx,.xls">
       </div>
       <p class="err" id="importErr"></p>
-      <p class="vce-import-warn" id="importWarn"></p>
+      <p class="notice-warn" id="importWarn"></p>
 
-      <div class="vce-method-row">
-        <span class="vce-method-label">
+      <div class="section-row">
+        <span class="section-label">
           Método de combinación por banda
-          <span class="vce-info" tabindex="0" title="Promedio: promedio aritmético de todas las filas del archivo — método oficial de reporte del laboratorio. RMS: combina las filas por energía (solo como referencia de comparación).">i</span>
+          <span class="info-icon" tabindex="0" title="Promedio: promedio aritmético de todas las filas del archivo — método oficial de reporte del laboratorio. RMS: combina las filas por energía (solo como referencia de comparación).">i</span>
         </span>
-        <div class="vce-segmented" id="metodoSegmented">
-          <button type="button" class="vce-segmented-btn active" data-method="promedio">Promedio</button>
-          <button type="button" class="vce-segmented-btn" data-method="rms">RMS</button>
+        <!-- segmented-btn da el estilo compartido; vce-segmented-btn es el gancho que usa el JS. -->
+        <div class="segmented" id="metodoSegmented">
+          <button type="button" class="segmented-btn vce-segmented-btn active" data-method="promedio">Promedio</button>
+          <button type="button" class="segmented-btn vce-segmented-btn" data-method="rms">RMS</button>
         </div>
       </div>
 
@@ -67,8 +68,8 @@
   <div class="step">
     <div class="step-head"><div class="step-num">2</div><h2>Datos del reporte y cálculo</h2></div>
     <div class="step-body">
-      <h3 class="vce-form-grupo">Medición</h3>
-      <div class="vce-form-grid">
+      <h3 class="group-title">Medición</h3>
+      <div class="form-grid">
         <div class="field">
           <label for="operadorInput">Operador</label>
           <input type="text" id="operadorInput" placeholder="Ej. Andrés González">
@@ -91,8 +92,8 @@
         </div>
       </div>
 
-      <h3 class="vce-form-grupo">Área y exposición</h3>
-      <div class="vce-form-grid">
+      <h3 class="group-title">Área y exposición</h3>
+      <div class="form-grid">
         <div class="field">
           <label for="areaInput">Área</label>
           <input type="text" id="areaInput" placeholder="Ej. Bodega">
@@ -117,7 +118,7 @@
       <div class="vce-axis-summary" id="axisSummary"></div>
 
       <p class="vce-total" id="totalExposure"></p>
-      <p class="vce-import-warn" id="staleWarn"></p>
+      <p class="notice-warn" id="staleWarn"></p>
 
       <div class="preview-wrap">
         <table class="preview" id="resultsTable"></table>

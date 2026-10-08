@@ -1,53 +1,15 @@
 /* Estilos específicos del módulo Vibración de Cuerpo Entero (VCE).
-   Todo aquí va bajo body.vce-page para no afectar la landing ni otros módulos,
-   que siguen usando únicamente assets/css/style.css. */
+   Los componentes comunes (dropzone, avisos, toggle segmentado, etiqueta de sección, grilla de
+   campos, subtítulo de grupo…) viven en assets/css/style.css; acá queda solo lo propio de VCE. */
 
-.vce-dropzone{padding:16px;}
-.vce-dropzone .fname{font-size:12px;}
-
-/* Aviso no bloqueante de la importación de .xlsx (ej. modo de funcionamiento inesperado, A(8)
-   recalculado que difiere del reportado por el equipo) — distinto de .err, que sí impide seguir. */
-.vce-import-warn{
-  display:block;margin-top:8px;font-family:var(--font-body);font-size:12px;font-weight:600;
-  color:#7A5A06;background:var(--amber-soft);border:1px solid var(--amber);
-  border-radius:8px;padding:6px 10px;line-height:1.5;
-}
-.vce-import-warn:empty{display:none;padding:0;border:none;margin:0;}
-
-/* Switch de método de combinación por banda (RMS / Promedio) — sobre la tabla que afecta. */
-.vce-method-row{
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
-  gap:10px;margin-top:16px;
-}
-.vce-method-label{
-  display:inline-flex;align-items:center;gap:6px;
-  font-family:var(--font-body);font-size:11.5px;font-weight:600;color:var(--ink-soft);
-  text-transform:uppercase;letter-spacing:.3px;
-}
-.vce-info{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:15px;height:15px;border-radius:50%;
-  background:var(--line);color:var(--ink-soft);
-  font-size:10px;font-weight:700;font-style:italic;text-transform:none;letter-spacing:0;
-  cursor:help;
-}
-.vce-segmented{display:inline-flex;border:1.5px solid var(--accent);border-radius:12px;overflow:hidden;}
-.vce-segmented-btn{
-  border:none;background:#fff;color:var(--accent);
-  font-family:var(--font-body);font-weight:700;font-size:12.5px;
-  padding:8px 14px;cursor:pointer;transition:background .15s,color .15s;
-}
-.vce-segmented-btn+.vce-segmented-btn{border-left:1.5px solid var(--accent);}
-.vce-segmented-btn.active{background:var(--accent);color:#fff;cursor:default;}
-.vce-segmented-btn:hover:not(.active){background:var(--accent-soft);}
-
+/* Grilla editable de 20 bandas × X/Y/Z (se llena por importación, tipeo o pegado). */
 .vce-grid-wrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:12px;}
 table.vce-grid{border-collapse:collapse;width:100%;font-size:12.5px;font-family:var(--mono);}
 table.vce-grid th{
   background:var(--accent-soft);color:var(--lime-ink);
   padding:7px 10px;text-align:center;white-space:nowrap;border-bottom:1px solid var(--line);font-size:11.5px;
 }
-table.vce-grid td{padding:3px 6px;border-bottom:1px solid #EEF2F1;text-align:center;}
+table.vce-grid td{padding:3px 6px;border-bottom:1px solid var(--divider);text-align:center;}
 table.vce-grid td.vce-band{font-weight:600;text-align:left;padding-left:10px;white-space:nowrap;}
 table.vce-grid tr:last-child td{border-bottom:none;}
 .vce-cell{
@@ -56,6 +18,7 @@ table.vce-grid tr:last-child td{border-bottom:none;}
 }
 .vce-cell:focus{outline:none;border-color:var(--accent);background:#fff;}
 
+/* Resumen por eje (sección 3). */
 .vce-axis-summary{
   display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:18px;
 }
@@ -73,14 +36,6 @@ table.vce-grid tr:last-child td{border-bottom:none;}
 
 table.preview tr.vce-row-exceed td{background:#FBEDEA;}
 
-/* Campos de la sección 2: Operador/Equipo, Hora de la medición, Área/Tiempo de Exposición. */
-.vce-form-grupo{
-  font-family:var(--font-body);font-size:11.5px;font-weight:700;color:var(--accent);
-  text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px;
-}
-.vce-form-grupo + .vce-form-grid{margin-bottom:18px;}
-.vce-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;}
-.vce-form-grid .field input{width:100%;min-width:0;}
+/* Selector de hora de la medición (hora : minutos a. m./p. m.). */
 .vce-hora{display:flex;align-items:center;gap:6px;}
 .vce-hora select{min-width:0;}
-@media (max-width:560px){ .vce-form-grid{grid-template-columns:1fr;} }

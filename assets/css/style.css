@@ -22,6 +22,16 @@
   --disabled-ink:#8C90A3;
   --font-title:"Poppins", var(--sans);
   --font-body:"Inter", var(--sans);
+
+  /* Sistema visual de los módulos (tomado del módulo VCE, referencia de diseño). */
+  --disabled-bg:#C7CBE0;     /* botón primario deshabilitado (gris lavanda) */
+  --divider:#EEF2F1;         /* divisor fino entre filas de tabla */
+  --warn-ink:#7A5A06;        /* texto de avisos ámbar no bloqueantes */
+  --radius-card:20px;
+  --radius-dropzone:16px;
+  --radius-control:12px;     /* botones y toggle segmentado */
+  --radius-input:10px;
+  --shadow-card:0 4px 14px rgba(18,22,43,.06);
 }
 *{box-sizing:border-box;}
 body{
@@ -68,10 +78,10 @@ body{
 .step{
   background:var(--panel);
   border:none;
-  border-radius:20px;
+  border-radius:var(--radius-card);
   margin-bottom:20px;
   overflow:hidden;
-  box-shadow:0 4px 14px rgba(18,22,43,.06);
+  box-shadow:var(--shadow-card);
 }
 .step-head{
   display:flex;align-items:center;gap:12px;
@@ -93,15 +103,15 @@ body{
 
 .dropzone{
   border:1.5px dashed var(--line);
-  border-radius:16px;
-  padding:30px 16px;
+  border-radius:var(--radius-dropzone);
+  padding:16px;
   text-align:center;
   cursor:pointer;
   font-family:var(--font-body);
   transition:border-color .15s, background .15s;
 }
 .dropzone:hover, .dropzone.drag{border-color:var(--accent); background:var(--accent-soft);}
-.dropzone .fname{font-family:var(--mono);font-size:12.5px;color:var(--accent);margin-top:8px;}
+.dropzone .fname{font-family:var(--mono);font-size:12px;color:var(--accent);margin-top:8px;}
 input[type=file]{display:none;}
 
 .readout{
@@ -123,9 +133,63 @@ input[type=file]{display:none;}
 .field label{font-family:var(--font-body);font-size:11.5px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
 .field select, .field input[type=number], .field input[type=text]{
   font-family:var(--mono);font-size:13px;
-  padding:8px 10px;border:1px solid var(--line);border-radius:10px;
+  padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-input);
   background:#fff;color:var(--ink);min-width:110px;
 }
+
+/* Grilla de campos de 2 columnas (1 en móvil), con subtítulo de grupo opcional encima. */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;}
+.form-grid .field input{width:100%;min-width:0;}
+.group-title{
+  font-family:var(--font-body);font-size:11.5px;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px;
+}
+.group-title + .form-grid{margin-bottom:18px;}
+@media (max-width:560px){ .form-grid{grid-template-columns:1fr;} }
+
+/* Unidades dentro de textos en mayúsculas (labels, encabezados): text-transform:uppercase
+   convierte "µg/m³" en "ΜG/M³" (se lee "MG") y "g/mol" en "G/MOL". Envolver la unidad en
+   <span class="unit"> la deja tal cual. */
+.unit{text-transform:none;}
+
+/* Fila con etiqueta de sección a la izquierda (mayúsculas grises, ícono de info opcional) y un
+   control a la derecha, ej. "MÉTODO DE COMBINACIÓN POR BANDA" + toggle Promedio/RMS. */
+.section-row{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+  gap:10px;margin-top:16px;
+}
+.section-label{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-body);font-size:11.5px;font-weight:600;color:var(--ink-soft);
+  text-transform:uppercase;letter-spacing:.3px;
+}
+.info-icon{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:15px;height:15px;border-radius:50%;
+  background:var(--line);color:var(--ink-soft);
+  font-size:10px;font-weight:700;font-style:italic;text-transform:none;letter-spacing:0;
+  cursor:help;
+}
+
+/* Toggle segmentado tipo píldora (ej. Promedio / RMS). La opción activa lleva .active. */
+.segmented{display:inline-flex;border:1.5px solid var(--accent);border-radius:var(--radius-control);overflow:hidden;}
+.segmented-btn{
+  border:none;background:#fff;color:var(--accent);
+  font-family:var(--font-body);font-weight:700;font-size:12.5px;
+  padding:8px 14px;cursor:pointer;transition:background .15s,color .15s;
+}
+.segmented-btn+.segmented-btn{border-left:1.5px solid var(--accent);}
+.segmented-btn.active{background:var(--accent);color:#fff;cursor:default;}
+.segmented-btn:hover:not(.active){background:var(--accent-soft);}
+
+/* Aviso ámbar no bloqueante (distinto de .err, que sí impide seguir). Se oculta solo cuando
+   no tiene texto, así el JS solo tiene que asignar textContent. */
+.notice-warn{
+  display:block;margin-top:8px;font-family:var(--font-body);font-size:12px;font-weight:600;
+  color:var(--warn-ink);background:var(--amber-soft);border:1px solid var(--amber);
+  border-radius:8px;padding:6px 10px;line-height:1.5;
+}
+.notice-warn:empty{display:none;padding:0;border:none;margin:0;}
 
 table.params{width:100%;border-collapse:collapse;margin-top:14px;font-size:13px;}
 table.params th{
@@ -141,16 +205,16 @@ table.params tr:last-child td{border-bottom:none;}
 input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;}
 
 button.primary{
-  background:var(--accent);color:#fff;border:none;border-radius:12px;
+  background:var(--accent);color:#fff;border:none;border-radius:var(--radius-control);
   padding:12px 22px;font-size:13.5px;font-weight:700;cursor:pointer;
   font-family:var(--font-body);letter-spacing:.2px;
   transition:background .15s;
 }
 button.primary:hover{background:var(--accent-hover);}
-button.primary:disabled{background:#C7CBE0;cursor:not-allowed;}
+button.primary:disabled{background:var(--disabled-bg);cursor:not-allowed;}
 button.ghost{
   background:transparent;border:1.5px solid var(--accent);color:var(--accent);
-  border-radius:12px;padding:11px 20px;font-weight:700;font-size:13.5px;cursor:pointer;
+  border-radius:var(--radius-control);padding:11px 20px;font-weight:700;font-size:13.5px;cursor:pointer;
   font-family:var(--font-body);transition:background .15s;
 }
 button.ghost:hover{background:var(--accent-soft);}
@@ -164,7 +228,7 @@ table.preview th{
   border-bottom:1px solid var(--line);font-size:11.5px;
 }
 table.preview th:first-child, table.preview td:first-child{text-align:left;}
-table.preview td{padding:6px 10px;text-align:right;border-bottom:1px solid #EEF2F1;white-space:nowrap;}
+table.preview td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--divider);white-space:nowrap;}
 table.preview tr.avg td{background:var(--amber-soft);font-weight:700;}
 
 /* Estado pass/fail (ej. cumple/excede un límite) — reutilizable por cualquier ensayo. */

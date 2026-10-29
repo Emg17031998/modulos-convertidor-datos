@@ -38,6 +38,33 @@ const LabUtils = (function () {
     });
   }
 
+  // Huella SHA-256 (hex) de un ArrayBuffer, para dejar registro verificable del archivo fuente.
+  // crypto.subtle existe en contextos seguros (https y file://); si no está, 'no disponible'.
+  async function sha256Hex(buffer) {
+    if (!(window.crypto && window.crypto.subtle)) return 'no disponible';
+    const digest = await window.crypto.subtle.digest('SHA-256', buffer);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // Igual que readWorkbook (mismas opciones de lectura), pero devuelve además la huella SHA-256
+  // y el tamaño del archivo: { workbook, sha256, size }.
+  function readWorkbookWithHash(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async e => {
+        try {
+          const buffer = e.target.result;
+          const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: true });
+          resolve({ workbook, sha256: await sha256Hex(buffer), size: buffer.byteLength });
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
   // Convierte una hoja del workbook a "array of arrays" (una fila = un array de celdas)
   function sheetToAOA(workbook, sheetName) {
     const ws = workbook.Sheets[sheetName];
@@ -231,7 +258,7 @@ const LabUtils = (function () {
   }
 
   return {
-    attachDropzone, attachMultiDropzone, readWorkbook, sheetToAOA,
+    attachDropzone, attachMultiDropzone, readWorkbook, readWorkbookWithHash, sha256Hex, sheetToAOA,
     normalizeHeader, findHeaderRow, buildColIndexByAlias, parseNumericHeader, parseLocaleNumber,
     toTimeParts, fmtDate, fmtTime, fmtNum, styleHeaderRow, styleTotalRow,
     downloadWorkbook, addTraceabilitySheet, downloadCSV, downloadBlob

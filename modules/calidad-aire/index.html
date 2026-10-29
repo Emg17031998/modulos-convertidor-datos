@@ -8,6 +8,9 @@
 <link rel="stylesheet" href="calidad-aire.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+<!-- docx (memoria de cálculo) no está publicada en cdnjs; jsDelivr sirve su build UMD como
+     JavaScript (el build de la v9 se sirve como application/node y el navegador lo bloquea). -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 </head>
 <body>
 
@@ -25,6 +28,12 @@
     <div class="doc-cell"><span class="lbl">Conversión</span><span class="doc-cell-value">ppb → µg/m³</span></div>
     <div class="doc-cell"><span class="lbl">Salida</span><span class="doc-cell-value">.xlsx · Promedios + fuente</span></div>
   </header>
+
+  <div class="actions actions-memoria">
+    <p class="note-mono" id="memoriaEstado">Descripción del método · sin resultados</p>
+    <button class="btn-secondary" id="memoriaBtn">Memoria de cálculo (.docx)</button>
+  </div>
+  <p class="err" id="memoriaErr"></p>
 
   <section class="step">
     <h2 class="step-title"><span class="step-num">1</span>Cargar archivo fuente</h2>
@@ -101,7 +110,10 @@
 
 </div>
 
-<script src="../../assets/js/utils.js"></script>
-<script src="calidad-aire.js"></script>
+<script src="../../assets/js/utils.js?v=2026-10-28-memoria"></script>
+<script src="../../assets/js/memoria-calculo.js?v=2026-10-28-memoria"></script>
+<script src="calidad-aire.js?v=2026-10-28-memoria"></script>
+<script src="calidad-aire-ui.js?v=2026-10-28-memoria"></script>
+<script src="calidad-aire-memoria.js?v=2026-10-28-memoria"></script>
 </body>
 </html>

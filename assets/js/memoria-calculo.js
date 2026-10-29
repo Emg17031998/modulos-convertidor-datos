@@ -244,11 +244,15 @@ const LabMemoria = (function () {
     out.push(parrafo('**Resumen de resultados**', { keepNext: true, spacing: { before: 120, after: 80 } }));
     const t = ej.resumen.tabla;
     out.push(...bloque({ tipo: 'tabla', ...t }));
-    out.push(parrafo(`**Ejemplo trabajado:** ${ej.ejemplo.titulo}`, { keepNext: true, spacing: { before: 120, after: 80 } }));
-    ej.ejemplo.pasos.forEach((p, i) => {
-      out.push(parrafo(`Paso ${i + 1}. ${p.titulo || ''}`.trim(), { size: 18, bold: true, keepNext: true, spacing: { before: 80, after: 40 } }));
-      out.push(recuadro([{ texto: p.formula }, { texto: p.sustitucion }, { texto: p.resultado, bold: true }]));
-    });
+    if (ej.ejemplo) {
+      out.push(parrafo(`**Ejemplo trabajado:** ${ej.ejemplo.titulo}`, { keepNext: true, spacing: { before: 120, after: 80 } }));
+      ej.ejemplo.pasos.forEach((p, i) => {
+        out.push(parrafo(`Paso ${i + 1}. ${p.titulo || ''}`.trim(), { size: 18, bold: true, keepNext: true, spacing: { before: 80, after: 40 } }));
+        out.push(recuadro([{ texto: p.formula }, { texto: p.sustitucion }, { texto: p.resultado, bold: true }]));
+      });
+    } else {
+      out.push(parrafo('**Ejemplo trabajado:** no hay ningún valor numérico calculado para mostrar.', { spacing: { before: 120, after: 80 } }));
+    }
     out.push(separador());
     return out;
   }

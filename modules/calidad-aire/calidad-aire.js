@@ -2,7 +2,22 @@
 // Lógica específica del ensayo "Promedios de Calidad de Aire Ambiental".
 // Todo lo genérico (lectura/escritura de xlsx, formateo, dropzone) vive en assets/js/utils.js.
 
+// Identificación del módulo: la leen el encabezado de la página y la memoria de cálculo
+// (ISO/IEC 17025). Al cambiar el cálculo, subir la versión y agregar una entrada al historial.
+const MODULO_INFO = {
+  codigo: '01 · CAA · PROMEDIOS',
+  titulo: 'Calidad de Aire Ambiental',
+  sigla: 'CAA',
+  version: '1.0.0',
+  fecha: '2026-10-28',
+  historial: [
+    { version: '1.0.0', fecha: '2026-10-28', cambio: 'Versión inicial documentada.' }
+  ]
+};
+
 let workbook = null, aoa = [], colIndex = {}, unitsRow = [], sheetNames = [], detectedParams = [];
+// Registro del archivo cargado (nombre, tamaño, SHA-256) para la memoria de cálculo.
+let lastImportFile = null;
 
 // Alias reconocidos por TÍTULO de columna (nunca por posición/índice fijo). Los archivos de
 // campo no tienen una estructura uniforme entre sí, así que la detección se basa en comparar
@@ -27,6 +42,14 @@ const HEADER_ALIASES = {
 };
 const DATE_TIME_TITLES = ['date', 'fecha', 'time', 'hora'];
 const HEADER_SEARCH_ROWS = 5;
+// Patrón EPAS: bloques de 12 registros de 5 min seguidos de una fila de promedio horario.
+const REGISTROS_POR_BLOQUE = 12;
+const MAX_BLOQUES = 200; // salvaguarda de detectBlocks
+// Volumen molar (L/mol, 25 °C y 1 atm) y fila de inicio de datos si el campo queda vacío.
+const VM_DEFAULT = 24.45;
+const FILA_INICIO_DEFAULT = 3;
+// Parámetros marcados por defecto en el paso 2.
+const PARAMS_PREDETERMINADOS = ['CO', 'NO2', 'PMA', 'PMB', 'RH', 'SO2'];
 
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
@@ -55,8 +78,11 @@ async function handleFile(file) {
   sheetRow.style.display = 'none';
   sheetSelect.innerHTML = '';
 
+  lastImportFile = null;
   try {
-    workbook = await LabUtils.readWorkbook(file);
+    const leido = await LabUtils.readWorkbookWithHash(file);
+    workbook = leido.workbook;
+    lastImportFile = { nombre: file.name, tamanoBytes: leido.size, sha256: leido.sha256 };
   } catch (err) {
     loadErr.textContent = 'No se pudo leer el archivo: ' + err.message;
     return;
@@ -154,15 +180,15 @@ function detectBlocks(startIdx0) {
   const blocks = [];
   let k = 1;
   while (true) {
-    const dataStart = startIdx0 + 13 * (k - 1);
-    const dataEnd = dataStart + 11;   // última de las 12 filas de datos
-    const avgRow = dataStart + 12;    // fila de promedio
+    const dataStart = startIdx0 + (REGISTROS_POR_BLOQUE + 1) * (k - 1);
+    const dataEnd = dataStart + REGISTROS_POR_BLOQUE - 1;   // última de las 12 filas de datos
+    const avgRow = dataStart + REGISTROS_POR_BLOQUE;        // fila de promedio
     if (dataEnd >= aoa.length) break;
     const dateVal = aoa[dataEnd] ? aoa[dataEnd][colIndex['Date']] : null;
     if (dateVal === null || dateVal === undefined) break;
     blocks.push({ dataStart, dataEnd, avgRow: avgRow < aoa.length ? avgRow : null });
     k++;
-    if (k > 200) break; // salvaguarda
+    if (k > MAX_BLOQUES) break; // salvaguarda
   }
   return blocks;
 }
@@ -174,7 +200,7 @@ function renderParamsTable() {
   detectedParams.forEach(name => {
     const unit = unitsRow[colIndex[name]] ?? '';
     const isGasByUnit = String(unit).toLowerCase().includes('ppb');
-    const defaultChecked = ['CO', 'NO2', 'PMA', 'PMB', 'RH', 'SO2'].includes(name);
+    const defaultChecked = PARAMS_PREDETERMINADOS.includes(name);
     const defaultConvert = isGasByUnit || GAS_DEFAULTS[name] !== undefined;
     const pm = GAS_DEFAULTS[name] ?? '';
     const tr = document.createElement('tr');
@@ -240,12 +266,12 @@ genBtn.addEventListener('click', () => {
   const { params, conversions } = getSelection();
   if (params.length === 0) { genErr.textContent = 'Selecciona al menos un parámetro.'; return; }
 
-  const startRow1based = parseInt(startRowInput.value, 10) || 3;
+  const startRow1based = parseInt(startRowInput.value, 10) || FILA_INICIO_DEFAULT;
   const startIdx0 = startRow1based - 1;
   const blocks = detectBlocks(startIdx0);
   if (blocks.length === 0) { genErr.textContent = 'No se detectaron intervalos con el patrón 12 datos + 1 promedio a partir de la fila indicada.'; return; }
 
-  const molarVol = parseFloat(molarVolInput.value) || 24.45;
+  const molarVol = parseFloat(molarVolInput.value) || VM_DEFAULT;
   const dateIdx = colIndex['Date'], timeIdx = colIndex['Time'];
 
   const rows = blocks.map(b => {
@@ -281,7 +307,12 @@ genBtn.addEventListener('click', () => {
     genAvg.converted[p] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
   });
 
-  lastResult = { params, conversions, molarVol, rows, genAvg, sourceSheetName: sheetSelect.value };
+  // fuente no participa del cálculo: queda para la memoria de cálculo (loadSheet reasigna aoa,
+  // colIndex y unitsRow, así que estas referencias siguen siendo las de este cálculo).
+  lastResult = {
+    params, conversions, molarVol, rows, genAvg, sourceSheetName: sheetSelect.value,
+    fuente: { archivo: lastImportFile, aoa, colIndex, unitsRow, blocks, startRow1based }
+  };
   renderPreview(lastResult);
   dlBtn.style.display = 'inline-block';
 });

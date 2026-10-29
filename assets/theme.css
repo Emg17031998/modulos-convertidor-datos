@@ -128,6 +128,8 @@ table.data tr.avg td{background:var(--sage);font-weight:500;}
   background:transparent;color:var(--ink-2);border:1.5px dashed var(--olive-600);cursor:not-allowed;
 }
 .actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+/* Fila de la "Memoria de cálculo" bajo el encabezado del documento, alineada a la derecha. */
+.actions-memoria{justify-content:flex-end;margin:-8px 0 24px;}
 
 /* ---------- Toggle segmentado (ej. Promedio / RMS) — la opción activa lleva .active ---------- */
 .segmented{display:flex;border:var(--border);}

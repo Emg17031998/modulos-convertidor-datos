@@ -30,7 +30,20 @@
     celdas.estado.innerHTML = excede ? '<span class="chip-warn">Excede</span>' : '<span class="chip-ok">Cumple</span>';
   }
 
-  // Este listener se registra después del de vibracion-cuerpo-entero.js, así que corre cuando
-  // lastResult ya tiene el cálculo nuevo.
-  document.getElementById('calcBtn').addEventListener('click', llenarFicha);
+  // Estado del botón "Memoria de cálculo": la memoria incluye el registro de la ejecución solo si
+  // hay un cálculo hecho.
+  const memoriaEstado = document.getElementById('memoriaEstado');
+  function actualizarEstadoMemoria() {
+    memoriaEstado.textContent = lastResult
+      ? 'Incluye el registro del último cálculo'
+      : 'Descripción del método · sin resultados';
+  }
+
+  // El código del encabezado sale de MODULO_INFO, igual que en la memoria.
+  document.querySelector('.doc-code').textContent = MODULO_INFO.codigo;
+
+  // Estos listeners se registran después de los de vibracion-cuerpo-entero.js, así que corren
+  // cuando lastResult ya tiene el cálculo nuevo (o ya se borró).
+  document.getElementById('calcBtn').addEventListener('click', () => { llenarFicha(); actualizarEstadoMemoria(); });
+  document.getElementById('clearBtn').addEventListener('click', actualizarEstadoMemoria);
 })();

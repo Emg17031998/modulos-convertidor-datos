@@ -13,6 +13,20 @@ console.log('[VCE] vibracion-cuerpo-entero.js cargado — versión 2026-09-30 (d
 // (distinto de la duración de la medición) y se pondera cada banda a una jornada de referencia
 // de 8h (ver T0_MINUTOS más abajo — fórmula ISO 2631-1/5349-1 estándar).
 
+// Identificación y versión del módulo (ISO/IEC 17025): la leen el encabezado de la página y la
+// memoria de cálculo. Cambiar una fórmula o constante obliga a subir `version` (MINOR si cambia
+// un cálculo, PATCH si solo texto/UI) y a agregar una línea al historial.
+const MODULO_INFO = {
+  codigo: '03 · VCE / WBV',
+  titulo: 'Vibración de Cuerpo Entero',
+  sigla: 'VCE',
+  version: '1.0.0',
+  fecha: '2026-10-28',
+  historial: [
+    { version: '1.0.0', fecha: '2026-10-28', cambio: 'Versión inicial documentada.' }
+  ]
+};
+
 // 20 bandas de tercio de octava (Hz), fijas para los 3 ejes.
 const BANDS = [1, 1.3, 1.6, 2, 2.5, 3.1, 4, 5, 6.3, 8, 10, 12.5, 16, 20, 25, 31.5, 40, 50, 63, 80];
 const AXES = ['X', 'Y', 'Z'];
@@ -47,6 +61,15 @@ const T0_SEGUNDOS_8H = T0_MINUTOS * 60;
 // HVM200 puede grabar con otros factores (se confirmó un archivo real grabado con k = 1/1/1), y
 // en ese caso el valor del archivo NO se usa para calcular — solo se avisa de la diferencia.
 const K_ISO = { X: 1.4, Y: 1.4, Z: 1.0 };
+
+// Tolerancias de detección y de verificación (mismos valores que antes estaban escritos en línea;
+// a nivel superior para que la memoria de cálculo los muestre desde la misma fuente).
+// Emparejamiento de frecuencias contra BANDS: máx(abs Hz; rel × banda).
+const TOL_BANDA = { abs: 0.05, rel: 0.05 };
+// Fila de promedio del instrumento vs. lo calculado: máx(abs; rel × valor del instrumento).
+const TOL_FILA_PROMEDIO = { abs: 0.0005, rel: 0.01 };
+// A(8) recalculado con datos de la hoja Resumen vs. A(8) del equipo: máx(abs; rel × A(8) equipo).
+const TOL_A8_EQUIPO = { abs: 0.0005, rel: 0.02 };
 
 function normalizarTexto(s) {
   if (s === null || s === undefined) return '';
@@ -181,7 +204,7 @@ function matchBandIndex(freq) {
     const diff = Math.abs(b - freq);
     if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
   });
-  return bestIdx !== -1 && bestDiff <= Math.max(0.05, BANDS[bestIdx] * 0.05) ? bestIdx : -1;
+  return bestIdx !== -1 && bestDiff <= Math.max(TOL_BANDA.abs, BANDS[bestIdx] * TOL_BANDA.rel) ? bestIdx : -1;
 }
 
 // Convierte una celda de hora/duración (Date, fracción de día, o texto "hh:mm:ss") a segundos.
@@ -384,7 +407,7 @@ function parseAxisSheet(aoa, duracionFilaSeg) {
       const ref = LabUtils.parseLocaleNumber(filaResumenInstrumento[colForBand[i]]);
       if (ref === null) return;
       const { muestras, duraciones: d } = samples[i];
-      const tol = Math.max(0.0005, Math.abs(ref) * 0.01);
+      const tol = Math.max(TOL_FILA_PROMEDIO.abs, Math.abs(ref) * TOL_FILA_PROMEDIO.rel);
       const okProm = Math.abs(combinarValor(muestras, d, 'promedio') - ref) <= tol;
       const okRms = Math.abs(combinarValor(muestras, d, 'rms') - ref) <= tol;
       if (!okProm && !okRms) noCoinciden.push(band);
@@ -484,6 +507,9 @@ let lastImportSamples = null;
 // Metadata de la hoja Resumen del último archivo importado (hora de inicio, duración, etc.), para
 // completar el encabezado del reporte Word. null si no se importó ningún archivo.
 let lastImportMeta = null;
+// Registro del último archivo importado (nombre, tamaño, SHA-256, hojas usadas) para la memoria
+// de cálculo (ISO/IEC 17025, 7.5). null si los datos se ingresaron a mano.
+let lastImportFile = null;
 const METODO_DEFAULT = 'promedio';
 let metodoActual = METODO_DEFAULT;
 
@@ -520,12 +546,13 @@ async function handleFile(file) {
   importWarn.textContent = '';
   fname.textContent = file.name;
   try {
-    const workbook = await LabUtils.readWorkbook(file);
+    const { workbook, sha256, size } = await LabUtils.readWorkbookWithHash(file);
     const meta = readResumenMeta(workbook);
     const duracionFilaSeg = meta ? parseDuracionPromedioSegundos(meta.promedio) : null;
 
     const samples = {};
     const warnings = [];
+    const hojasUsadas = [];
     for (const axis of AXES) {
       const sheetName = encontrarHojaEje(workbook.SheetNames, axis);
       if (!sheetName) { importErr.textContent = `No se encontró la hoja del eje ${axis} en este archivo.`; return; }
@@ -533,11 +560,17 @@ async function handleFile(file) {
       const parsed = parseAxisSheet(aoa, duracionFilaSeg);
       if (parsed.error) { importErr.textContent = `Eje ${axis} (hoja "${sheetName}"): ${parsed.error}.`; return; }
       samples[axis] = parsed.samples;
+      hojasUsadas.push(sheetName.replace(/\s+/g, ' ').trim());
       parsed.avisos.forEach(a => warnings.push(`Eje ${axis}: ${a}`));
     }
 
     lastImportSamples = samples;
     lastImportMeta = meta;
+    lastImportFile = {
+      nombre: file.name, tamanoBytes: size, sha256,
+      hojas: (meta ? ['Resumen'] : []).concat(hojasUsadas).join(', '),
+      avisos: warnings
+    };
     aplicarMetodoAGrid();
     // Hora de la medición (sección 2): se sugiere la hora de inicio que trae el archivo; queda
     // editable a mano. Un archivo nuevo es otra medición, así que reemplaza la hora anterior.
@@ -563,7 +596,7 @@ async function handleFile(file) {
           const { aRMS, factoresK, a8Equipo } = meta;
           if (aRMS[axis] === null || factoresK[axis] === null || a8Equipo[axis] === null) return;
           const a8Calc = aRMS[axis] * factoresK[axis] * Math.sqrt(teSegundos / T0_SEGUNDOS_8H);
-          const tol = Math.max(0.0005, a8Equipo[axis] * 0.02);
+          const tol = Math.max(TOL_A8_EQUIPO.abs, a8Equipo[axis] * TOL_A8_EQUIPO.rel);
           if (Math.abs(a8Calc - a8Equipo[axis]) > tol) {
             warnings.push(`Eje ${axis}: A(8) recalculado (${a8Calc.toFixed(5)}) difiere del reportado por el equipo (${a8Equipo[axis].toFixed(5)}) — verifica el archivo.`);
           }
@@ -590,6 +623,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   AXES.forEach(axis => cells[axis].forEach(inp => { inp.value = ''; }));
   lastImportSamples = null;
   lastImportMeta = null;
+  lastImportFile = null;
   metodoActual = METODO_DEFAULT;
   document.querySelectorAll('.vce-segmented-btn').forEach(b => b.classList.toggle('active', b.dataset.method === METODO_DEFAULT));
   tiempoInput.value = '';

@@ -16,6 +16,7 @@ cálculo ocurre client-side en el navegador de quien abre la página.
 ## Stack
 
 - HTML/CSS/JS vanilla — sin frameworks, sin bundlers, sin npm install.
+- Fuentes Archivo e IBM Plex Mono vía Google Fonts (importadas desde `assets/theme.css`).
 - Librerías cargadas por CDN (cdnjs.cloudflare.com):
   - `xlsx` (SheetJS) — lectura de archivos .xlsx.
   - `exceljs` — generación de archivos .xlsx de salida con formato (fuente/relleno de celdas,
@@ -34,7 +35,8 @@ cálculo ocurre client-side en el navegador de quien abre la página.
 ```
 index.html                     ← landing con enlaces a cada módulo/ensayo
 assets/
-  css/style.css                ← estilos compartidos (paleta, tipografía, componentes)
+  theme.css                    ← estilos compartidos: variables y componentes del diseño
+                                  "Ficha técnica" (ver rediseno-ficha-tecnica/DESIGN_HANDOFF.md)
   js/utils.js                  ← funciones comunes reutilizables entre módulos:
                                   lectura de xlsx, render de tabla preview, descarga
                                   de xlsx generado, formateo de fecha/hora
@@ -52,22 +54,27 @@ de otro módulo — solo consume funciones de `assets/js/utils.js`.
 
 ## Convenciones de diseño
 
-- Paleta (variables CSS en `assets/css/style.css`): fondo `#F4F5FA` (`--bg`), tinta `#12162B`
-  (`--ink`) / `#5B6072` (`--ink-soft`), acento navy `#10288C` (`--accent`) con hover azul de
-  acción `#274DEA` (`--accent-hover`), acento lima `#EAF6AD` (`--accent-soft` / `--lime`, fondo de
-  paneles/iconos/badges) con borde `#B6DB00` (`--lime-border`) y texto sobre lima `#5C7A00`
-  (`--lime-ink`), ámbar `#B8860B` para filas de totales/promedios (sin relación con la paleta
-  lima — se mantiene como marcador semántico aparte). Tipografía: Poppins (600/700/800, vía
-  Google Fonts) para títulos, Inter (400–700) para texto de cuerpo/UI, monoespaciada
-  (JetBrains Mono / Roboto Mono) para datos y lecturas tipo instrumento.
-- Cada página (landing y cada módulo) usa el mismo header de sitio: franja navy de ancho completo
-  con patrón de rejilla sutil (`.site-header` / `header.top` en la landing y en cada módulo
-  respectivamente — mismas clases `.site-header-*`), título en Poppins blanco y una leyenda en
-  lima. No dupliques este componente por módulo; reutiliza las clases existentes en `style.css`.
+- Diseño "Ficha técnica" (paleta oliva), definido en `assets/theme.css`; guía y maquetas de
+  referencia en `rediseno-ficha-tecnica/`. Variables: `--bg` #EFEEEF (fondo y campos), `--ink`
+  #161616 (texto, bordes, banda de encabezado, botón Calcular, avisos), `--ink-2` #313030 (texto
+  secundario), `--olive-900` #424437 (etiquetas pequeñas, botón Descargar), `--olive-600` #6E6F62
+  (numerales grandes y borde de zona de carga — nunca en texto < 24 px), `--olive-500` #8D9075
+  (relleno del número de paso), `--sage` #B2B794 (encabezado de tabla, estado Cumple), `--rule`
+  #ADADAC (líneas finas entre filas). Tipografía: Archivo (títulos y texto) e IBM Plex Mono
+  (datos, etiquetas, fórmulas). Sin esquinas redondeadas, sin sombras, sin degradados; bordes
+  `--border` (1,5 px `--ink`). Texto pequeño solo en `--ink`, `--ink-2` u `--olive-900`.
+- Cada página usa el mismo encabezado de documento (`.doc-header`): banda negra con el título y el
+  código del módulo (ej. `02 · VMB / HAV`) y debajo 4 celdas (Magnitud, Resolución, Norma,
+  Salida). No dupliques componentes por módulo: reutiliza las clases de `theme.css` (`.step`,
+  `.step-title`, `.field`, `.btn`, `.btn-primary`, `.btn-secondary`, `.dropzone`, `table.data`,
+  `.formula`, `.chip-ok` / `.chip-warn`, `.notice-warn`, `.tabs`, `.cell-grid`, `.fieldset`…).
+- No aplicar `text-transform:uppercase` a textos con unidades ("µg/m³" pasa a "ΜG/M³"): envolver la
+  unidad en `<span class="unit">`. Por eso los encabezados de `table.data` no van en mayúsculas.
 - Cada módulo sigue el mismo patrón de 3 pasos: (1) cargar archivo, (2) elegir parámetros/opciones
-  del ensayo, (3) generar y descargar, presentados como tarjetas blancas redondeadas
-  (`border-radius` grande, sombra suave) sobre el fondo `--bg`. Mantener esta estructura para que
-  la experiencia sea consistente entre ensayos.
+  del ensayo, (3) generar y descargar, cada uno como `.step` con título numerado. Mantener esta
+  estructura para que la experiencia sea consistente entre ensayos.
+- Lo que sea solo de presentación y necesite JS (pestañas, ficha de resultado) va en un archivo
+  aparte `<modulo>-ui.js`, para no mezclarlo con la lógica de cálculo del módulo.
 - Los cálculos se escriben como valores ya resueltos en el .xlsx de salida (no fórmulas en vivo
   de Excel) — decisión deliberada por simplicidad y porque el set de parámetros varía por caso.
   Se incluye siempre una hoja de copia de los datos fuente para trazabilidad.

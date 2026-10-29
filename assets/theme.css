@@ -1,0 +1,305 @@
+/* Rediseño "Ficha técnica" (paleta oliva) — sistema visual compartido.
+   Referencia: rediseno-ficha-tecnica/DESIGN_HANDOFF.md y design-reference/C2-Tokens.dc.html.
+   Reglas: texto pequeño solo en --ink, --ink-2 u --olive-900; los rellenos --olive-500 y --sage
+   llevan texto --ink; sin esquinas redondeadas, sin sombras, sin degradados. */
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --bg:#EFEEEF;          /* fondo de página y campos */
+  --ink:#161616;         /* texto, bordes, banda de encabezado, botón Calcular, avisos */
+  --ink-2:#313030;       /* texto secundario y notas */
+  --olive-900:#424437;   /* etiquetas pequeñas, botón Descargar */
+  --olive-600:#6E6F62;   /* numerales grandes, borde de zona de carga (NO para texto < 24px) */
+  --olive-500:#8D9075;   /* relleno del número de paso */
+  --sage:#B2B794;        /* encabezado de tabla, estado OK / Cumple */
+  --rule:#ADADAC;        /* líneas finas entre filas */
+  --font-sans:"Archivo", system-ui, sans-serif;
+  --font-mono:"IBM Plex Mono", ui-monospace, monospace;
+  --border:1.5px solid var(--ink);
+}
+
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-sans);}
+a{color:var(--ink);}
+a:hover{color:var(--olive-900);}
+input[type=file]{display:none;}
+[hidden]{display:none !important;}
+
+/* ---------- Página y encabezado de documento ---------- */
+.page{
+  max-width:1040px;margin:0 auto;padding:32px 24px 64px;
+  display:flex;flex-direction:column;gap:36px;
+}
+.page-wide{max-width:1200px;padding-top:40px;gap:40px;}
+
+.back-link{
+  font-family:var(--font-mono);font-size:13px;text-decoration:none;
+  display:inline-flex;align-items:center;min-height:44px;align-self:flex-start;
+}
+
+/* 4 columnas fijas (Magnitud, Resolución, Norma, Salida): con auto-fit la fila de título de ancho
+   completo impide que se colapsen las columnas vacías y queda un hueco a la derecha. */
+.doc-header{border:var(--border);display:grid;grid-template-columns:repeat(4, 1fr);}
+.doc-header-top{
+  grid-column:1 / -1;background:var(--ink);color:var(--bg);padding:18px 20px;
+  display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:baseline;
+}
+.doc-title{margin:0;font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.1;color:var(--bg);}
+.doc-code{font-family:var(--font-mono);font-size:14px;color:var(--sage);}
+.doc-cell{padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--ink);}
+.doc-cell:last-child{border-right:0;}
+.doc-cell-value{font-size:14px;font-weight:500;}
+.doc-cell.is-sage{background:var(--sage);}
+.doc-cell.is-sage .lbl{color:var(--ink);}
+
+/* ---------- Tipografía de apoyo ---------- */
+.lbl{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--olive-900);
+}
+.note{margin:0;font-size:13px;color:var(--ink-2);line-height:1.55;}
+.note-mono{margin:0;font-family:var(--font-mono);font-size:12px;color:var(--olive-900);line-height:1.6;}
+/* Unidades dentro de textos en mayúsculas: text-transform convierte "µg/m³" en "ΜG/M³". */
+.unit{text-transform:none;}
+
+/* ---------- Pasos ---------- */
+.step{display:flex;flex-direction:column;gap:16px;}
+.step-content{display:flex;flex-direction:column;gap:16px;}
+/* Paso aún no disponible (ej. sin archivo cargado): el JS agrega/quita .disabled. */
+.disabled{opacity:.45;pointer-events:none;}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+
+/* Panel de lectura del archivo (hoja, encabezado, bloques detectados…); el JS agrega .on. */
+.readout{
+  display:none;border:var(--border);padding:12px 16px;font-family:var(--font-mono);
+  font-size:12px;line-height:1.7;color:var(--ink-2);
+}
+.readout.on{display:block;}
+.readout b{color:var(--ink);font-weight:500;}
+
+/* Tabla de parámetros: casillas, nombre, unidad y peso molecular (filas generadas por el JS). */
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--olive-900);cursor:pointer;}
+.pname{font-weight:500;}
+.punit{color:var(--olive-900);}
+.pm-input{
+  width:90px;min-height:36px;padding:0 8px;border:var(--border);border-radius:0;background:transparent;
+  font-family:var(--font-mono);font-size:13px;color:var(--ink);text-align:right;
+}
+.pm-input:disabled{border-style:dashed;border-color:var(--olive-600);color:var(--olive-900);}
+table.data tr.avg td{background:var(--sage);font-weight:500;}
+.step-title{
+  margin:0;font-size:20px;font-weight:700;letter-spacing:.01em;text-transform:uppercase;
+  border-bottom:3px solid var(--ink);padding-bottom:8px;display:flex;gap:14px;align-items:center;
+}
+.step-num{
+  font-family:var(--font-mono);font-weight:500;font-size:14px;letter-spacing:0;
+  background:var(--olive-500);color:var(--ink);padding:2px 8px;
+}
+
+/* ---------- Campos ---------- */
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--olive-900);
+}
+.input,
+.field input[type=text], .field input[type=number], .field select{
+  min-height:44px;padding:0 12px;border:var(--border);border-radius:0;background:transparent;
+  font-family:var(--font-mono);font-size:15px;color:var(--ink);
+}
+.input:focus, .field input:focus, .field select:focus{outline:2px solid var(--olive-500);outline-offset:1px;}
+.field-row{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;}
+.form-grid .field input{width:100%;min-width:0;}
+
+/* ---------- Botones ---------- */
+.btn, .btn-primary, .btn-secondary{
+  min-height:44px;padding:0 24px;border-radius:0;cursor:pointer;
+  font-family:var(--font-sans);font-size:14px;font-weight:600;
+}
+.btn{background:var(--ink);color:var(--bg);border:0;letter-spacing:.04em;text-transform:uppercase;}
+.btn-primary{background:var(--olive-900);color:var(--bg);border:0;}
+.btn-secondary{background:transparent;color:var(--ink);border:var(--border);font-weight:500;}
+.btn:hover:not(:disabled){background:var(--ink-2);}
+.btn-primary:hover:not(:disabled){background:var(--ink);}
+.btn-secondary:hover:not(:disabled){background:var(--sage);}
+.btn:disabled, .btn-primary:disabled, .btn-secondary:disabled{
+  background:transparent;color:var(--ink-2);border:1.5px dashed var(--olive-600);cursor:not-allowed;
+}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+
+/* ---------- Toggle segmentado (ej. Promedio / RMS) — la opción activa lleva .active ---------- */
+.segmented{display:flex;border:var(--border);}
+.segmented-btn{
+  flex:1;min-height:44px;padding:0 16px;border:0;border-radius:0;background:transparent;color:var(--ink);
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;
+}
+.segmented-btn + .segmented-btn{border-left:1px solid var(--ink);}
+.segmented-btn.active{background:var(--ink);color:var(--bg);cursor:default;}
+.segmented-btn:hover:not(.active){background:var(--sage);}
+
+/* Ícono de información con tooltip (title). */
+.info-icon{
+  display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;
+  border:1px solid var(--olive-900);color:var(--olive-900);font-family:var(--font-mono);
+  font-size:10px;font-style:italic;text-transform:none;letter-spacing:0;cursor:help;
+}
+
+/* ---------- Zona de carga ---------- */
+.dropzone{
+  border:1.5px dashed var(--olive-600);padding:18px 16px;text-align:center;cursor:pointer;
+  font-size:14px;transition:background .15s;
+}
+.dropzone:hover, .dropzone.drag{background:#E3E3DD;}
+.dropzone .fname{font-family:var(--font-mono);font-size:12px;color:var(--olive-900);margin-top:6px;word-break:break-word;}
+/* Zona de carga grande con ícono de subida (un solo archivo por módulo). */
+.dropzone-lg{
+  min-height:112px;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;
+  font-weight:500;
+}
+.dropzone-lg .fname{margin-top:0;font-weight:400;}
+
+/* Grupo de campos con leyenda (ej. "MEDICIÓN", "ÁREA Y EXPOSICIÓN"). */
+.fieldset{
+  margin:0;border:var(--border);padding:16px 18px 18px;display:grid;gap:14px;
+  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));min-width:0;
+}
+.fieldset legend{font-family:var(--font-mono);font-size:12px;letter-spacing:.08em;padding:0 8px;}
+
+/* ---------- Tablas ---------- */
+.table-wrap{overflow-x:auto;}
+table.data{width:100%;border-collapse:collapse;}
+table.data th{
+  /* Sin text-transform: los encabezados que arma el JS llevan unidades ("m/s²", "µg/m³") que en
+     mayúsculas se leen mal ("M/S²", "ΜG/M³"). */
+  padding:10px 12px;text-align:right;font-family:var(--font-mono);font-weight:500;font-size:11px;
+  letter-spacing:.03em;background:var(--sage);color:var(--ink);
+  border-bottom:1.5px solid var(--ink);white-space:nowrap;
+}
+table.data td{
+  padding:9px 12px;text-align:right;font-family:var(--font-mono);font-size:13px;
+  border-bottom:1px solid var(--rule);color:var(--ink);white-space:nowrap;
+}
+table.data th:first-child, table.data td:first-child{text-align:left;}
+.table-caption{margin:0 0 8px;font-family:var(--font-mono);font-size:12px;color:var(--ink-2);}
+
+/* ---------- Fórmula ---------- */
+.formula-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:16px;}
+.formula{
+  border:var(--border);padding:14px 16px;display:flex;justify-content:space-between;gap:12px;
+  align-items:baseline;font-family:var(--font-mono);font-size:15px;
+}
+
+/* ---------- Chips de estado ---------- */
+.chip-ok, .chip-warn, .chip-pending,
+.status-ok, .status-bad{
+  display:inline-block;font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;
+  text-transform:uppercase;padding:2px 8px;font-weight:500;
+}
+.chip-ok, .status-ok{background:var(--sage);color:var(--ink);}
+.chip-warn, .status-bad{background:var(--ink);color:var(--bg);}
+.chip-pending{border:1px dashed var(--olive-600);color:var(--olive-900);padding:1px 7px;}
+.legend{display:flex;flex-wrap:wrap;gap:20px;font-family:var(--font-mono);font-size:12px;color:var(--ink-2);}
+.legend span{display:flex;gap:8px;align-items:center;}
+
+/* ---------- Avisos ---------- */
+/* .alert / .notice-warn: barra negra con "!" en chip sage. El JS de los módulos muestra/oculta
+   estos avisos con style.display o asignando texto; se ocultan solos si quedan vacíos. */
+.alert, .notice-warn{
+  background:var(--ink);color:var(--bg);padding:12px 16px 12px 46px;font-size:13px;line-height:1.5;
+  position:relative;margin:0;
+}
+.alert::before, .notice-warn::before{
+  content:"!";position:absolute;left:16px;top:12px;font-family:var(--font-mono);font-weight:500;
+  background:var(--sage);color:var(--ink);padding:0 8px;
+}
+.notice-warn:empty{display:none;}
+.err{margin:0;font-size:13px;font-weight:600;color:var(--ink);}
+.err:not(:empty)::before{content:"✕ ";font-family:var(--font-mono);}
+
+/* ---------- Pestañas ---------- */
+.tabs{display:flex;border-bottom:1.5px solid var(--ink);}
+.tab{
+  min-height:44px;padding:0 18px;background:transparent;color:var(--ink);border:0;cursor:pointer;
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);}
+.tab-empty{margin:0;padding:16px 0;font-family:var(--font-mono);font-size:12px;color:var(--olive-900);}
+
+/* ---------- Celdas de datos (fichas de resultado / hojas del reporte) ---------- */
+.cell-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));border:var(--border);}
+.cell{padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--ink);}
+.cell:last-child{border-right:0;}
+.cell-value{font-size:14px;font-weight:500;}
+
+/* ---------- Lista de archivos detectados (generada por el JS de Mano-Brazo) ---------- */
+.file-axis-list{display:flex;flex-direction:column;}
+.file-axis-card{padding:10px 14px;border-bottom:1px solid var(--rule);font-family:var(--font-mono);font-size:12px;}
+.file-axis-name{font-size:12.5px;font-weight:500;margin-bottom:4px;word-break:break-word;}
+.file-axis-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--ink-2);padding:2px 0;}
+.file-axis-row .axis-icon{flex:0 0 auto;}
+.file-axis-row.warn{color:var(--ink);font-weight:500;}
+.file-axis-row.warn .axis-icon{background:var(--ink);color:var(--bg);padding:0 6px;}
+.axis-manual-select{
+  min-height:36px;padding:0 8px;border:var(--border);border-radius:0;background:transparent;
+  font-family:var(--font-mono);font-size:12px;color:var(--ink);
+}
+
+/* ---------- Panel de diagnóstico (?debug=1) ---------- */
+.debug-panel{border:1.5px dashed var(--olive-600);padding:10px 14px;}
+.debug-panel summary{cursor:pointer;font-family:var(--font-mono);font-size:12px;font-weight:500;}
+.debug-panel[open] summary{margin-bottom:10px;}
+table.debug-table{border-collapse:collapse;width:100%;font-size:11px;font-family:var(--font-mono);margin-top:8px;}
+table.debug-table th{text-align:left;background:var(--sage);padding:5px 8px;border-bottom:1.5px solid var(--ink);white-space:nowrap;}
+table.debug-table td{padding:5px 8px;border-bottom:1px solid var(--rule);vertical-align:top;}
+
+/* ---------- Pie de página ---------- */
+.page-footer{
+  display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;
+  font-family:var(--font-mono);font-size:12px;color:var(--olive-900);
+  border-top:1px solid var(--rule);padding-top:16px;
+}
+
+/* ---------- Portada ---------- */
+.home-title-row{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;
+  border-bottom:3px solid var(--ink);padding-bottom:12px;
+}
+.home-title{margin:0;font-size:44px;font-weight:700;letter-spacing:-.02em;line-height:1;}
+.home-subtitle{font-family:var(--font-mono);font-size:13px;color:var(--ink-2);}
+.module-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+.module-list li{border-bottom:1px solid var(--ink);}
+.module-link{
+  text-decoration:none;color:var(--ink);display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:24px;padding:28px 0;align-items:start;
+}
+.module-link:hover{color:var(--ink);background:#E6E5E3;}
+.module-main{display:flex;gap:20px;align-items:baseline;grid-column:span 2;}
+.module-num{font-family:var(--font-mono);font-size:40px;font-weight:500;color:var(--olive-600);line-height:1;}
+.module-text{display:flex;flex-direction:column;gap:8px;}
+.module-name{font-size:24px;font-weight:600;line-height:1.15;}
+.module-desc{font-size:15px;line-height:1.5;color:var(--ink-2);max-width:480px;}
+.module-spec{margin:0;display:grid;grid-template-columns:90px 1fr;row-gap:6px;font-family:var(--font-mono);font-size:12.5px;}
+.module-spec dt{color:var(--olive-900);}
+.module-spec dd{margin:0;}
+.module-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
+.module-open{
+  font-size:14px;font-weight:600;display:flex;gap:10px;align-items:center;min-height:44px;
+  padding:0 16px;background:var(--ink);color:var(--bg);
+}
+
+/* ---------- Teléfono ---------- */
+@media (max-width:640px){
+  .page{padding:20px 16px 48px;gap:28px;}
+  .doc-title{font-size:26px;}
+  .doc-header{grid-template-columns:1fr;}
+  .doc-cell{border-right:0;border-bottom:1px solid var(--ink);}
+  .doc-cell:last-child{border-bottom:0;}
+  .cell{border-right:0;border-bottom:1px solid var(--ink);}
+  .cell:last-child{border-bottom:0;}
+  .form-grid{grid-template-columns:1fr;}
+  .home-title{font-size:34px;}
+  .module-main{grid-column:auto;}
+  .module-actions{align-items:flex-start;}
+}

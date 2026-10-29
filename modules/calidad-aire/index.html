@@ -4,91 +4,101 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Promedios · Calidad de Aire Ambiental</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/css/style.css">
+<link rel="stylesheet" href="../../assets/theme.css">
+<link rel="stylesheet" href="calidad-aire.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 <body>
 
-  <header class="site-header">
-    <div class="site-header-inner">
-      <div class="site-header-brand">
-        <a class="site-header-back" href="../../index.html">&larr; Todos los ensayos</a>
-        <h1>Promedios · Calidad de Aire Ambiental</h1>
-      </div>
-      <span class="site-header-tag">Registros 5&nbsp;min &rarr; promedio horario</span>
+<div class="page">
+
+  <a class="back-link" href="../../index.html">← Todos los ensayos</a>
+
+  <header class="doc-header">
+    <div class="doc-header-top">
+      <h1 class="doc-title">Calidad de Aire Ambiental</h1>
+      <span class="doc-code">01 · CAA · PROMEDIOS</span>
     </div>
+    <div class="doc-cell"><span class="lbl">Entrada</span><span class="doc-cell-value">Registros 5 min (EPAS)</span></div>
+    <div class="doc-cell"><span class="lbl">Cálculo</span><span class="doc-cell-value">Promedio horario</span></div>
+    <div class="doc-cell"><span class="lbl">Conversión</span><span class="doc-cell-value">ppb → µg/m³</span></div>
+    <div class="doc-cell"><span class="lbl">Salida</span><span class="doc-cell-value">.xlsx · Promedios + fuente</span></div>
   </header>
 
-<div class="wrap">
-
-  <!-- STEP 1 -->
-  <div class="step">
-    <div class="step-head"><div class="step-num">1</div><h2>Cargar archivo fuente (.xlsx)</h2></div>
-    <div class="step-body">
-      <div class="dropzone" id="dropzone">
-        <div>Arrastra el archivo aquí o haz clic para elegirlo</div>
+  <section class="step">
+    <h2 class="step-title"><span class="step-num">1</span>Cargar archivo fuente</h2>
+    <div class="caa-load">
+      <div class="dropzone dropzone-lg" id="dropzone">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M4 16v4h16v-4"></path></svg>
+        <div>Arrastra el .xlsx o haz clic para elegirlo</div>
         <div class="fname" id="fname">Ningún archivo cargado</div>
         <input type="file" id="fileInput" accept=".xlsx,.xls">
       </div>
-      <div class="row" id="sheetRow" style="display:none;">
+      <!-- El JS muestra este bloque (style.display = 'flex') cuando ya hay un archivo cargado. -->
+      <div class="caa-load-side" id="sheetRow" style="display:none;">
         <div class="field">
-          <label>Hoja</label>
+          <label for="sheetSelect">Hoja</label>
           <select id="sheetSelect"></select>
         </div>
         <div class="field">
-          <label>Fila donde inician los datos</label>
+          <label for="startRow">Fila donde inician los datos</label>
           <input type="number" id="startRow" value="3" min="2">
         </div>
       </div>
-      <div class="readout" id="readout"></div>
-      <p class="err" id="loadErr"></p>
     </div>
-  </div>
+    <div class="readout" id="readout"></div>
+    <p class="err" id="loadErr"></p>
+  </section>
 
-  <!-- STEP 2 -->
-  <div class="step">
-    <div class="step-head"><div class="step-num">2</div><h2>Elegir parámetros</h2></div>
-    <div class="step-body disabled" id="paramsBody">
-      <p class="hint">Marca los parámetros a extraer de esta hoja. Para gases en ppb, marca "convertir" e indica el peso molecular para obtener µg/m³.</p>
-      <table class="params" id="paramsTable">
-        <thead><tr><th></th><th>Parámetro</th><th>Unidad fuente</th><th>Convertir a µg/m³</th><th>PM (g/mol)</th></tr></thead>
-        <tbody id="paramsBodyRows"></tbody>
-      </table>
-      <div class="row">
+  <section class="step">
+    <h2 class="step-title"><span class="step-num">2</span>Elegir parámetros</h2>
+    <div class="step-content disabled" id="paramsBody">
+      <p class="note">Marca los parámetros a extraer. Para gases en ppb, activa «Convertir» e indica el peso molecular.</p>
+      <div class="table-wrap caa-params-wrap">
+        <table class="data params" id="paramsTable">
+          <thead><tr>
+            <th><span class="sr-only">Extraer</span></th>
+            <th>Parámetro</th><th>Unidad fuente</th><th>Convertir a µg/m³</th><th>PM (g/mol)</th>
+          </tr></thead>
+          <tbody id="paramsBodyRows"></tbody>
+        </table>
+      </div>
+      <div class="field-row">
         <div class="field">
-          <label>Volumen molar (L/mol)</label>
-          <input type="number" id="molarVol" value="24.45" step="0.01">
+          <label for="molarVol">Volumen molar (<span class="unit">L/mol</span>)</label>
+          <input type="number" id="molarVol" value="24.45" step="0.01" class="caa-vm">
+        </div>
+        <div class="formula caa-formula">
+          <span>µg/m³ = ppb × PM / Vm</span>
+          <span class="lbl">Convención EPA · 25 °C · 1 atm</span>
         </div>
       </div>
-      <p class="hint">µg/m³ = ppb × PM / volumen molar (convención EPA, 25 °C y 1 atm).</p>
     </div>
-  </div>
+  </section>
 
-  <!-- STEP 3 -->
-  <div class="step">
-    <div class="step-head"><div class="step-num">3</div><h2>Generar y descargar</h2></div>
-    <div class="step-body disabled" id="genBody">
+  <section class="step">
+    <h2 class="step-title"><span class="step-num">3</span>Generar y descargar</h2>
+    <div class="step-content disabled" id="genBody">
       <div class="actions">
-        <button class="primary" id="genBtn">Generar promedios</button>
-        <button class="ghost" id="dlBtn" style="display:none;">Descargar .xlsx</button>
+        <button class="btn" id="genBtn">Generar promedios</button>
+        <button class="btn-primary" id="dlBtn" style="display:none;">Descargar .xlsx</button>
       </div>
       <p class="err" id="genErr"></p>
-      <div class="preview-wrap" id="previewWrap" style="display:none;">
-        <table class="preview" id="previewTable"></table>
+      <div id="previewWrap" style="display:none;">
+        <p class="table-caption">VISTA PREVIA — hoja «Promedios»</p>
+        <div class="table-wrap">
+          <table class="data" id="previewTable"></table>
+        </div>
       </div>
+      <ul class="caa-notes">
+        <li>Detecta bloques de 12 registros de 5 min + una fila de promedio (patrón EPAS).</li>
+        <li>Si la fila de promedio está vacía, se calcula con los 12 registros del bloque.</li>
+        <li>El archivo incluye la hoja «Promedios» y una copia de la hoja fuente. Los valores son estáticos, no fórmulas.</li>
+      </ul>
     </div>
-  </div>
+  </section>
 
-  <p class="footnote">
-    Detecta bloques de 12 registros de 5 min + 1 fila de promedio (patrón EPAS). Si una fila de promedio está vacía,
-    el promedio se calcula automáticamente a partir de los 12 registros del bloque. El archivo descargado incluye
-    la hoja "Promedios" y una copia de la hoja fuente para trazabilidad. Los valores en "Promedios" son calculados
-    por esta herramienta (no son fórmulas en vivo de Excel).
-  </p>
 </div>
 
 <script src="../../assets/js/utils.js"></script>

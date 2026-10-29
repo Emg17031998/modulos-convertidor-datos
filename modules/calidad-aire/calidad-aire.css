@@ -1,0 +1,28 @@
+/* Estilos específicos del módulo Calidad de Aire Ambiental.
+   El sistema visual compartido ("Ficha técnica") está en assets/theme.css. */
+
+/* Paso 1: zona de carga (2 columnas) + Hoja / Fila de inicio a la derecha. El JS muestra
+   #sheetRow con style.display = 'flex'; acá se fija la dirección en columna. */
+.caa-load{display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:stretch;}
+.caa-load-side{flex-direction:column;gap:12px;}
+.caa-load-side .field select, .caa-load-side .field input{width:100%;}
+
+/* Paso 2: tabla de parámetros (filas generadas por el JS). */
+.caa-params-wrap{border:var(--border);}
+.caa-params-wrap table.data{min-width:620px;}
+.caa-params-wrap table.data th, .caa-params-wrap table.data td{text-align:left;}
+.caa-params-wrap table.data th:last-child, .caa-params-wrap table.data td:last-child{text-align:right;}
+.caa-params-wrap table.data th:first-child{width:48px;}
+.caa-vm{width:160px;}
+.caa-formula{flex:1 1 320px;flex-wrap:wrap;}
+
+/* Paso 3 */
+#previewWrap table.data{min-width:640px;}
+.caa-notes{
+  margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;
+  font-size:13px;color:var(--ink-2);line-height:1.5;
+}
+
+@media (max-width:640px){
+  .caa-load{grid-template-columns:1fr;}
+}

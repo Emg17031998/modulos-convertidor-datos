@@ -1,41 +1,59 @@
 /* Estilos específicos del módulo Vibración de Cuerpo Entero (VCE).
-   Los componentes comunes (dropzone, avisos, toggle segmentado, etiqueta de sección, grilla de
-   campos, subtítulo de grupo…) viven en assets/css/style.css; acá queda solo lo propio de VCE. */
+   El sistema visual compartido ("Ficha técnica") está en assets/theme.css. */
 
-/* Grilla editable de 20 bandas × X/Y/Z (se llena por importación, tipeo o pegado). */
-.vce-grid-wrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:12px;}
-table.vce-grid{border-collapse:collapse;width:100%;font-size:12.5px;font-family:var(--mono);}
+/* Paso 1: zona de carga (2 columnas) + método y Limpiar a la derecha. */
+.vce-load{display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:stretch;}
+.vce-load-side{display:flex;flex-direction:column;gap:12px;justify-content:space-between;}
+.vce-method-lbl{display:inline-flex;align-items:center;gap:6px;}
+
+/* Grilla editable de 20 bandas × X/Y/Z, con scroll y encabezado fijo. */
+.vce-grid-wrap{border:var(--border);max-height:340px;overflow:auto;}
+table.vce-grid{width:100%;border-collapse:collapse;min-width:480px;}
+table.vce-grid caption{text-align:left;font-family:var(--font-mono);font-size:12px;padding:10px 12px;color:var(--ink-2);}
 table.vce-grid th{
-  background:var(--accent-soft);color:var(--lime-ink);
-  padding:7px 10px;text-align:center;white-space:nowrap;border-bottom:1px solid var(--line);font-size:11.5px;
+  position:sticky;top:0;padding:10px 12px;text-align:right;font-family:var(--font-mono);font-weight:500;
+  font-size:11px;letter-spacing:.03em;background:var(--sage);color:var(--ink);
+  border-bottom:1.5px solid var(--ink);white-space:nowrap;
 }
-table.vce-grid td{padding:3px 6px;border-bottom:1px solid var(--divider);text-align:center;}
-table.vce-grid td.vce-band{font-weight:600;text-align:left;padding-left:10px;white-space:nowrap;}
-table.vce-grid tr:last-child td{border-bottom:none;}
+table.vce-grid th:first-child{text-align:left;}
+table.vce-grid td{padding:2px 8px;border-bottom:1px solid var(--rule);text-align:right;}
+table.vce-grid td.vce-band{font-family:var(--font-mono);font-size:13px;text-align:left;padding-left:12px;white-space:nowrap;}
 .vce-cell{
-  width:100%;min-width:70px;text-align:right;font-family:var(--mono);font-size:12.5px;
-  padding:5px 6px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--ink);
+  width:100%;min-width:70px;min-height:34px;text-align:right;font-family:var(--font-mono);font-size:13px;
+  padding:4px 6px;border:1px solid transparent;border-radius:0;background:transparent;color:var(--ink);
 }
-.vce-cell:focus{outline:none;border-color:var(--accent);background:#fff;}
+.vce-cell:focus{outline:none;border-color:var(--ink);background:#fff;}
 
-/* Resumen por eje (sección 3). */
-.vce-axis-summary{
-  display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:18px;
-}
-.vce-axis-card{
-  border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:#fff;
-}
-.vce-axis-card h4{
-  font-family:var(--font-title);font-size:14px;margin:0 0 8px;color:var(--ink);
-}
-.vce-axis-card p{font-family:var(--font-body);font-size:12.5px;color:var(--ink-soft);margin:4px 0 0;line-height:1.5;}
-
-.vce-total{
-  font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--ink);margin:0 0 16px;
-}
-
-table.preview tr.vce-row-exceed td{background:#FBEDEA;}
-
-/* Selector de hora de la medición (hora : minutos a. m./p. m.). */
+/* Paso 2 */
+.vce-fieldsets{display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;}
+.vce-fieldsets .field input{width:100%;}
 .vce-hora{display:flex;align-items:center;gap:6px;}
-.vce-hora select{min-width:0;}
+.vce-hora select{min-width:0;flex:1;}
+.vce-hora select#periodoSel{flex:1.4;}
+/* La hora ocupa toda la fila del grupo "Medición" para que el a. m./p. m. no quede cortado. */
+.field:has(> .vce-hora){grid-column:1 / -1;max-width:340px;}
+
+/* Paso 3: ficha de resultado */
+.vce-big{font-family:var(--font-mono);font-size:30px;line-height:1.1;}
+.vce-big small{font-size:14px;}
+.vce-result-cells .cell.is-ink{background:var(--ink);border-right-color:var(--bg);}
+.vce-result-cells .cell.is-ink .lbl{color:var(--sage);}
+.vce-result-cells .cell.is-ink .vce-big{color:var(--bg);}
+.vce-band-note{font-family:var(--font-mono);font-size:12px;}
+.vce-result-cells .cell.is-ink .vce-band-note{color:var(--bg);}
+
+/* Resumen por eje (lo genera el JS): fila de celdas con borde. */
+.vce-axis-summary{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));border:var(--border);}
+.vce-axis-card{padding:14px 20px;border-right:1px solid var(--ink);display:flex;flex-direction:column;gap:6px;}
+.vce-axis-card:last-child{border-right:0;}
+.vce-axis-card h4{margin:0;font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--olive-900);}
+.vce-axis-card p{margin:0;font-size:13px;color:var(--ink-2);line-height:1.5;}
+
+.vce-total{margin:0;font-family:var(--font-mono);font-size:13px;}
+table.data tr.vce-row-exceed td{background:#E3E3DD;font-weight:500;}
+
+@media (max-width:640px){
+  .vce-load{grid-template-columns:1fr;}
+  .vce-axis-card{border-right:0;border-bottom:1px solid var(--ink);}
+  .vce-axis-card:last-child{border-bottom:0;}
+}

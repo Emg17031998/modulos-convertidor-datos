@@ -3,71 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Convertidor de Calidad de Datos · Laboratorio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css">
+<title>Módulos de Laboratorio · Convertidor de datos</title>
+<link rel="stylesheet" href="assets/theme.css">
 </head>
-<body class="landing">
+<body>
 
-  <header class="site-header">
-    <div class="site-header-inner">
-      <div class="site-header-brand">
-        <h1>Herramientas de Laboratorio</h1>
-        <span class="site-header-sub">Laboratorio Ambiental</span>
-      </div>
-      <span class="site-header-tag">Cálculos y conversión de datos por ensayo</span>
+<div class="page page-wide">
+
+  <header class="doc-header">
+    <div class="doc-header-top">
+      <h1 class="doc-title">Módulos de Laboratorio</h1>
+      <span class="doc-code">DOC · CONVERTIDOR DE DATOS</span>
     </div>
+    <div class="doc-cell"><span class="lbl">Área</span><span class="doc-cell-value">Laboratorio Ambiental</span></div>
+    <div class="doc-cell"><span class="lbl">Procesamiento</span><span class="doc-cell-value">Local · navegador</span></div>
+    <div class="doc-cell"><span class="lbl">Módulos</span><span class="doc-cell-value" style="font-family:var(--font-mono)">03 / 03 disponibles</span></div>
+    <div class="doc-cell is-sage"><span class="lbl">Salida</span><span class="doc-cell-value">.xlsx con trazabilidad</span></div>
   </header>
 
-  <main class="landing-main">
-    <p class="landing-lead">
-      Elige el ensayo. Cada herramienta procesa el archivo directamente en tu navegador — nada se
-      envía a ningún servidor.
-    </p>
+  <section class="home-title-row">
+    <h2 class="home-title">Elige el ensayo</h2>
+    <span class="home-subtitle">Cálculos y conversión de datos por ensayo</span>
+  </section>
 
-    <div class="landing-panel">
-      <div class="landing-grid">
-
-        <a class="landing-card" href="modules/calidad-aire/index.html">
-          <span class="landing-card-badge">Disponible</span>
-          <div class="landing-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 8h11a3 3 0 1 0-3-3"/>
-              <path d="M3 13h15a3 3 0 1 1-3 3"/>
-              <path d="M3 18h8a2.5 2.5 0 1 0-2.5-2.5"/>
-            </svg>
+  <ol class="module-list">
+    <li>
+      <a class="module-link" href="modules/calidad-aire/index.html">
+        <div class="module-main">
+          <span class="module-num">01</span>
+          <div class="module-text">
+            <span class="module-name">Calidad de Aire Ambiental</span>
+            <span class="module-desc">Promedios horarios a partir de registros de 5 min (formato EPAS), con conversión opcional ppb → µg/m³.</span>
           </div>
-          <h3>Calidad de Aire Ambiental</h3>
-          <p>Extrae promedios horarios desde datos de 5 min (formato EPAS), con conversión opcional ppb → µg/m³.</p>
-        </a>
-
-        <a class="landing-card" href="modules/vibracion-mano-brazo/index.html">
-          <span class="landing-card-badge">Disponible</span>
-          <div class="landing-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 12h3l2-7 3 14 3-10 2 5h4l3 3"/>
-            </svg>
+        </div>
+        <dl class="module-spec">
+          <dt>ENTRADA</dt><dd>.xlsx · 5 min</dd>
+          <dt>CÁLCULO</dt><dd>Promedio 1 h</dd>
+          <dt>NORMA</dt><dd>EPA 25 °C, 1 atm</dd>
+        </dl>
+        <div class="module-actions">
+          <span class="chip-ok">Disponible</span>
+          <span class="module-open">ABRIR <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="module-link" href="modules/vibracion-mano-brazo/index.html">
+        <div class="module-main">
+          <span class="module-num">02</span>
+          <div class="module-text">
+            <span class="module-name">Vibración Mano-Brazo (HAV)</span>
+            <span class="module-desc">Aeq(8h) por banda de octava a partir de archivos X/Y/Z y comparación con límites.</span>
           </div>
-          <h3>Vibración Mano-Brazo (HAV)</h3>
-          <p>Aeq(8h) por banda de octava a partir de archivos X/Y/Z, comparado contra los límites DGNTI-COPANIT 45-2000.</p>
-        </a>
-
-        <a class="landing-card" href="modules/vibracion-cuerpo-entero/index.html">
-          <span class="landing-card-badge">Disponible</span>
-          <div class="landing-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 12h3l2-7 3 14 3-10 2 5h4l3 3"/>
-            </svg>
+        </div>
+        <dl class="module-spec">
+          <dt>ENTRADA</dt><dd>3 arch. × brazo</dd>
+          <dt>CÁLCULO</dt><dd>Aeq(8h) · octava</dd>
+          <dt>NORMA</dt><dd>COPANIT 45-2000</dd>
+        </dl>
+        <div class="module-actions">
+          <span class="chip-ok">Disponible</span>
+          <span class="module-open">ABRIR <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+    </li>
+    <li>
+      <a class="module-link" href="modules/vibracion-cuerpo-entero/index.html">
+        <div class="module-main">
+          <span class="module-num">03</span>
+          <div class="module-text">
+            <span class="module-name">Vibración Cuerpo Entero (VCE)</span>
+            <span class="module-desc">A(8h) por tercio de octava a partir del archivo del equipo HVM200 y comparación con límites.</span>
           </div>
-          <h3>Vibración Cuerpo Entero (VCE)</h3>
-          <p>A(8h) por banda de tercio de octava a partir de segmentos de exposición, comparado contra los límites DGNTI-COPANIT 45-2000.</p>
-        </a>
+        </div>
+        <dl class="module-spec">
+          <dt>ENTRADA</dt><dd>.xlsx del equipo</dd>
+          <dt>CÁLCULO</dt><dd>A(8h) · 1/3 oct.</dd>
+          <dt>NORMA</dt><dd>COPANIT 45-2000</dd>
+        </dl>
+        <div class="module-actions">
+          <span class="chip-ok">Disponible</span>
+          <span class="module-open">ABRIR <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+    </li>
+  </ol>
 
-      </div>
-    </div>
-  </main>
+  <footer class="page-footer">
+    <span>Los archivos no se envían a ningún servidor.</span>
+    <span><a href="https://github.com/Emg17031998/modulos-convertidor-datos">Repositorio</a></span>
+  </footer>
+
+</div>
 
 </body>
 </html>

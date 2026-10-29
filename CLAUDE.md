@@ -21,8 +21,8 @@ cálculo ocurre client-side en el navegador de quien abre la página.
   - `xlsx` (SheetJS) — lectura de archivos .xlsx.
   - `exceljs` — generación de archivos .xlsx de salida con formato (fuente/relleno de celdas,
     formatos numéricos y de fecha).
-  - `docx` 8.5.0 — generación de reportes Word (.docx) con tablas (usado por el módulo VCE). No
-    está publicada en cdnjs: se carga desde jsDelivr (`build/index.umd.js`). La v9 se sirve como
+  - `docx` 8.5.0 — generación de documentos Word (.docx): el reporte de VCE y la memoria de
+    cálculo de todos los módulos. No está publicada en cdnjs: se carga desde jsDelivr (`build/index.umd.js`). La v9 se sirve como
     `application/node` y el navegador la bloquea, por eso queda fija en 8.5.0.
 - Sin TypeScript, sin React. Mantenerlo así salvo que se decida explícitamente lo contrario.
 - No hay comando de build, lint ni test: no hay `package.json` ni herramientas de compilación.
@@ -38,15 +38,21 @@ assets/
   theme.css                    ← estilos compartidos: variables y componentes del diseño
                                   "Ficha técnica" (ver rediseno-ficha-tecnica/DESIGN_HANDOFF.md)
   js/utils.js                  ← funciones comunes reutilizables entre módulos:
-                                  lectura de xlsx, render de tabla preview, descarga
-                                  de xlsx generado, formateo de fecha/hora
+                                  lectura de xlsx (readWorkbookWithHash: + SHA-256), render
+                                  de tabla preview, descarga de xlsx generado, formateo
+  js/memoria-calculo.js        ← generador común de la memoria de cálculo (LabMemoria):
+                                  todo el formato Word vive acá
 modules/
   calidad-aire/
     index.html                 ← UI del módulo
-    calidad-aire.js             ← lógica específica de este ensayo
+    calidad-aire.js            ← lógica específica de este ensayo (+ MODULO_INFO)
+    calidad-aire-ui.js         ← solo presentación
+    calidad-aire-memoria.js    ← contenido de la memoria de cálculo
   <siguiente-ensayo>/
     index.html
     <siguiente-ensayo>.js
+    <siguiente-ensayo>-ui.js
+    <siguiente-ensayo>-memoria.js
 ```
 
 Cada ensayo nuevo es una carpeta nueva dentro de `modules/`. Nunca debe necesitar tocar el código
@@ -88,6 +94,40 @@ de otro módulo — solo consume funciones de `assets/js/utils.js`.
 4. Agregar el enlace correspondiente en `index.html` (landing).
 5. Antes de escribir un cálculo nuevo, preguntar por la lógica exacta del ensayo (fórmulas,
    estructura de la hoja fuente, unidades) si no está documentada — no asumir un formato.
+6. Crear su memoria de cálculo (sección siguiente).
+
+## Memoria de cálculo (ISO/IEC 17025)
+
+Cada módulo ofrece un botón `Memoria de cálculo (.docx)` (`#memoriaBtn`, `.btn-secondary`, en
+`.actions.actions-memoria` justo debajo de `.doc-header`, siempre habilitado) con una nota
+`#memoriaEstado` que actualiza el `-ui.js` ("Descripción del método · sin resultados" /
+"Incluye el registro del último cálculo") y un `#memoriaErr`.
+
+- **Formato en un solo lugar.** `assets/js/memoria-calculo.js` (`LabMemoria`) arma todo el Word:
+  bloque de identificación, las 9 secciones en orden fijo (`LabMemoria.SECCIONES`), la sección 10
+  "Registro de la ejecución" solo si hay cálculo (si no, la nota "Documento descriptivo del
+  método…"), Control del documento con historial y firmas, encabezado y "Página X de Y". Un
+  módulo nunca da formato: solo entrega contenido en bloques tipados (`parrafo`, `lista`, `paso`,
+  `formula`, `tabla`, `nota`). Admite `**negrita**` en el texto.
+- **`<modulo>-memoria.js`** (se carga último) construye la spec `{ modulo, ficha, secciones,
+  ejecucion }` y llama a `LabMemoria.descargar(spec)`. El texto de incertidumbre es siempre
+  `LabMemoria.TEXTO_INCERTIDUMBRE`.
+- **Una sola fuente de verdad.** Todo número de referencia (límites, bandas, factores, T0,
+  tolerancias, PM, Vm, alias de encabezado…) se lee de las constantes de nivel superior del
+  módulo; nunca se reescribe en la memoria. Si un valor está como literal dentro de una función,
+  subirlo a una constante con el mismo valor.
+- **La memoria no recalcula.** El ejemplo trabajado reproduce la operación con los valores ya
+  calculados (`lastResult` o `getResult()`), y cada paso pasa por `LabMemoria.verificar(valor,
+  calculado, contexto)`, que lanza error si la diferencia relativa supera 1e-9. Lo que la memoria
+  necesite y el cálculo no guarde (muestras, archivo, bloques…) se agrega como metadato al
+  resultado, sin cambiar el cálculo.
+- **`MODULO_INFO`** `{ codigo, titulo, sigla, version, fecha, historial }` al principio de
+  `<modulo>.js`; lo leen el encabezado de la página (vía `-ui.js`) y la memoria. **Al cambiar un
+  cálculo, subir la versión y agregar una entrada al historial.**
+- **Trazabilidad del archivo fuente:** leer con `LabUtils.readWorkbookWithHash(file)` y guardar
+  `{ nombre, tamanoBytes, sha256, hojas }`.
+- Nombre del archivo: `Memoria_Calculo_<SIGLA>_v<version>[_<fuente>]_<AAAAMMDD>.docx` (la fuente
+  solo si hay exactamente un archivo).
 
 ## Qué evitar
 

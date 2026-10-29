@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>C2 · Vibración Cuerpo Entero</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#EFEEEF}
+a{color:#161616}a:hover{color:#424437}
+.lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#424437}
+.cell{padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-right:1px solid #161616}
+.sec{margin:0;font-size:20px;font-weight:700;letter-spacing:.01em;border-bottom:3px solid #161616;padding-bottom:8px;display:flex;gap:14px;align-items:center}
+.num{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px;background:#8D9075;color:#161616;padding:2px 8px}
+.inp{min-height:44px;box-sizing:border-box;padding:0 12px;border:1.5px solid #161616;background:transparent;font-family:'IBM Plex Mono',monospace;font-size:15px;color:#161616;width:100%}
+.fld{display:flex;flex-direction:column;gap:6px}
+.btn{min-height:44px;padding:0 24px;background:#161616;color:#EFEEEF;border:0;font-family:Archivo,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;cursor:pointer}
+.btn-p{min-height:44px;padding:0 24px;background:#424437;color:#EFEEEF;border:0;font-family:Archivo,sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+.btn2{min-height:44px;padding:0 24px;background:transparent;color:#161616;border:1.5px solid #161616;font-family:Archivo,sans-serif;font-size:14px;font-weight:500;cursor:pointer}
+.th{position:sticky;top:0;padding:10px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px;letter-spacing:.05em;background:#B2B794;color:#161616;border-bottom:1.5px solid #161616;white-space:nowrap}
+.td{padding:8px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;border-bottom:1px solid #ADADAC;color:#424437}
+.fs{margin:0;border:1.5px solid #161616;padding:16px 18px 18px;display:grid;gap:14px}
+.lg{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;padding:0 8px;background:#EFEEEF}
+.note{margin:0;font-size:13px;color:#313030;line-height:1.55}
+</style>
+</helmet>
+<div style="font-family: Archivo, system-ui, sans-serif; color: #161616; background: #EFEEEF; min-height: 100vh">
+  <div style="max-width: 1040px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 36px">
+    <a href="C2-Inicio.dc.html" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; align-self: flex-start">← Todos los ensayos</a>
+
+    <header style="border: 1.5px solid #161616; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))">
+      <div style="grid-column: 1 / -1; background: #161616; color: #EFEEEF; padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: baseline">
+        <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em">Vibración de Cuerpo Entero</h1>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #B2B794">03 · VCE / WBV</span>
+      </div>
+      <div class="cell"><span class="lbl">Magnitud</span><span style="font-size: 14px; font-weight: 500">A(8h)</span></div>
+      <div class="cell"><span class="lbl">Resolución</span><span style="font-size: 14px; font-weight: 500">Tercio de octava</span></div>
+      <div class="cell"><span class="lbl">Norma</span><span style="font-size: 14px; font-weight: 500">DGNTI-COPANIT 45-2000</span></div>
+      <div class="cell" style="border-right: 0"><span class="lbl">Salida</span><span style="font-size: 14px; font-weight: 500">.xlsx · CSV · Word</span></div>
+    </header>
+
+    <section style="display: flex; flex-direction: column; gap: 16px">
+      <h2 class="sec"><span class="num">1</span>CARGAR ARCHIVO</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px">
+        <label style="grid-column: span 2; min-height: 112px; border: 1.5px dashed #6E6F62; display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; cursor: pointer; padding: 16px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#161616" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M4 16v4h16v-4"></path></svg>
+          <span style="font-size: 14px; font-weight: 500">Arrastra el .xlsx del equipo o haz clic para elegirlo</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #424437">Ningún archivo cargado</span>
+          <input type="file" accept=".xlsx" style="display: none">
+        </label>
+        <div style="display: flex; flex-direction: column; gap: 12px; justify-content: space-between">
+          <div class="fld"><label for="vce-met" class="lbl">Método de combinación por banda i</label><select id="vce-met" class="inp"><option>Promedio RMS</option></select></div>
+          <button type="button" class="btn2">Limpiar</button>
+        </div>
+      </div>
+      <div style="border: 1.5px solid #161616; max-height: 340px; overflow: auto">
+        <table style="width: 100%; border-collapse: collapse; min-width: 480px">
+          <caption style="text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 10px 12px; color: #313030">SEGMENTOS — valores por banda de 1/3 de octava</caption>
+          <thead><tr><th class="th" style="text-align: left">FRECUENCIA Hz</th><th class="th">X (m/s²)</th><th class="th">Y (m/s²)</th><th class="th">Z (m/s²)</th></tr></thead>
+          <tbody>
+            <sc-for list="{{freqs}}" as="f" hint-placeholder-count="10">
+              <tr><td class="td" style="text-align: left; color: #161616">{{f}}</td><td class="td">—</td><td class="td">—</td><td class="td">—</td></tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px">
+      <h2 class="sec"><span class="num">2</span>DATOS DEL REPORTE Y CÁLCULO</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px">
+        <fieldset class="fs" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))">
+          <legend class="lg">MEDICIÓN</legend>
+          <div class="fld"><label for="vce-op" class="lbl">Operador</label><input id="vce-op" type="text" class="inp" placeholder="[Nombre]"></div>
+          <div class="fld"><label for="vce-eq" class="lbl">Equipo</label><input id="vce-eq" type="text" class="inp" placeholder="[Equipo]"></div>
+          <div class="fld"><label for="vce-hr" class="lbl">Hora de la medición</label><input id="vce-hr" type="time" class="inp"></div>
+        </fieldset>
+        <fieldset class="fs" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))">
+          <legend class="lg">ÁREA Y EXPOSICIÓN</legend>
+          <div class="fld"><label for="vce-ar" class="lbl">Área</label><input id="vce-ar" type="text" class="inp" placeholder="[Área]"></div>
+          <div class="fld"><label for="vce-te" class="lbl">Tiempo de exposición (min)</label><input id="vce-te" type="number" class="inp" placeholder="0"></div>
+        </fieldset>
+      </div>
+      <div><button type="button" class="btn">CALCULAR</button></div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px">
+      <h2 class="sec"><span class="num">3</span>RESULTADOS Y EXPORTACIÓN</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); border: 1.5px solid #161616">
+        <div class="cell" style="background: #161616; border-right-color: #EFEEEF"><span class="lbl" style="color: #B2B794">A(8h)</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 30px; color: #EFEEEF">— <span style="font-size: 14px">m/s²</span></span></div>
+        <div class="cell"><span class="lbl">Límite</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 30px">— <span style="font-size: 14px">m/s²</span></span></div>
+        <div class="cell"><span class="lbl">Eje dominante</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 30px">—</span></div>
+        <div class="cell" style="border-right: 0"><span class="lbl">Estado</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 30px">—</span></div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px">
+        <button type="button" class="btn-p">Descargar resumen (.xlsx)</button>
+        <button type="button" class="btn2">Exportar CSV del resumen</button>
+        <button type="button" class="btn2">Exportar a Word</button>
+      </div>
+      <p class="note" style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #424437">Evaluación A(8h) por banda de tercio de octava según DGNTI-COPANIT 45-2000.</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      freqs: ['1', '1,25', '1,6', '2', '2,5', '3,15', '4', '5', '6,3', '8', '10', '12,5', '16', '20', '25', '31,5', '40', '50', '63', '80']
+    };
+  }
+}
+</script>
+</body>
+</html>

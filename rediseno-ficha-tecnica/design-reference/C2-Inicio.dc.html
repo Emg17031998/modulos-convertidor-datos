@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>C2 · Inicio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#EFEEEF}
+a{color:#161616}a:hover{color:#424437}
+.lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#424437}
+.cell{padding:18px 20px;display:flex;flex-direction:column;gap:6px;border-right:1px solid #161616}
+</style>
+</helmet>
+<div style="font-family: Archivo, system-ui, sans-serif; color: #161616; background: #EFEEEF; min-height: 100vh">
+  <div style="max-width: 1200px; margin: 0 auto; padding: 40px 24px 56px; display: flex; flex-direction: column; gap: 40px">
+    <header style="border: 1.5px solid #161616; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr))">
+      <div style="grid-column: 1 / -1; background: #161616; color: #EFEEEF; padding: 20px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: baseline">
+        <span style="font-size: 30px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1">Herramientas de Laboratorio</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #B2B794">DOC · CONVERTIDOR DE DATOS</span>
+      </div>
+      <div class="cell"><span class="lbl">Área</span><span style="font-size: 15px; font-weight: 500">Laboratorio Ambiental</span></div>
+      <div class="cell"><span class="lbl">Procesamiento</span><span style="font-size: 15px; font-weight: 500">Local · navegador</span></div>
+      <div class="cell"><span class="lbl">Módulos</span><span style="font-size: 15px; font-weight: 500; font-family: 'IBM Plex Mono', monospace">03 / 03 disponibles</span></div>
+      <div class="cell" style="border-right: 0; background: #B2B794"><span class="lbl" style="color: #161616">Salida</span><span style="font-size: 15px; font-weight: 500">.xlsx con trazabilidad</span></div>
+    </header>
+
+    <section style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; border-bottom: 3px solid #161616; padding-bottom: 12px">
+      <h1 style="margin: 0; font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1">Elige el ensayo</h1>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #313030">Cálculos y conversión de datos por ensayo</span>
+    </section>
+
+    <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+      <sc-for list="{{modules}}" as="m" hint-placeholder-count="3">
+        <li style="border-bottom: 1px solid #161616">
+          <a href="{{m.href}}" style="text-decoration: none; color: #161616; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; padding: 28px 0; align-items: start">
+            <div style="display: flex; gap: 20px; align-items: baseline; grid-column: span 2">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 40px; font-weight: 500; color: #6E6F62; line-height: 1">{{m.n}}</span>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <span style="font-size: 24px; font-weight: 600; line-height: 1.15">{{m.title}}</span>
+                <span style="font-size: 15px; line-height: 1.5; color: #313030; max-width: 480px">{{m.desc}}</span>
+              </div>
+            </div>
+            <dl style="margin: 0; display: grid; grid-template-columns: 90px 1fr; row-gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px">
+              <dt style="color: #424437">ENTRADA</dt><dd style="margin: 0">{{m.input}}</dd>
+              <dt style="color: #424437">CÁLCULO</dt><dd style="margin: 0">{{m.calc}}</dd>
+              <dt style="color: #424437">NORMA</dt><dd style="margin: 0">{{m.ref}}</dd>
+            </dl>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 12px">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; background: #B2B794; padding: 4px 8px">DISPONIBLE</span>
+              <span style="font-size: 14px; font-weight: 600; display: flex; gap: 10px; align-items: center; min-height: 44px; padding: 0 16px; background: #161616; color: #EFEEEF">ABRIR <span aria-hidden="true">→</span></span>
+            </div>
+          </a>
+        </li>
+      </sc-for>
+    </ol>
+
+    <footer style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #424437; border-top: 1px solid #ADADAC; padding-top: 16px">
+      <span>Los archivos no se envían a ningún servidor.</span>
+      <span>Rev. [VERSIÓN] · <a href="https://github.com/emg17031998/modulos-convertidor-datos">Repositorio</a></span>
+    </footer>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      modules: [
+        { n: '01', href: 'C2-Aire.dc.html', title: 'Calidad de Aire Ambiental', desc: 'Promedios horarios a partir de registros de 5 min (formato EPAS), con conversión opcional ppb → µg/m³.', input: '.xlsx · 5 min', calc: 'Promedio 1 h', ref: 'EPA 25 °C, 1 atm' },
+        { n: '02', href: 'C2-HAV.dc.html', title: 'Vibración Mano-Brazo (HAV)', desc: 'Aeq(8h) por banda de octava a partir de archivos X/Y/Z y comparación con límites.', input: '3 arch. × brazo', calc: 'Aeq(8h) · octava', ref: 'COPANIT 45-2000' },
+        { n: '03', href: 'C2-VCE.dc.html', title: 'Vibración Cuerpo Entero (VCE)', desc: 'A(8h) por tercio de octava a partir de segmentos de exposición y comparación con límites.', input: '.xlsx del equipo', calc: 'A(8h) · 1/3 oct.', ref: 'COPANIT 45-2000' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>C2 · Vibración Mano-Brazo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#EFEEEF}
+a{color:#161616}a:hover{color:#424437}
+.lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#424437}
+.cell{padding:14px 20px;display:flex;flex-direction:column;gap:4px;border-right:1px solid #161616}
+.sec{margin:0;font-size:20px;font-weight:700;letter-spacing:.01em;border-bottom:3px solid #161616;padding-bottom:8px;display:flex;gap:14px;align-items:center}
+.num{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:14px;background:#8D9075;color:#161616;padding:2px 8px}
+.inp{min-height:44px;box-sizing:border-box;padding:0 12px;border:1.5px solid #161616;background:transparent;font-family:'IBM Plex Mono',monospace;font-size:15px;color:#161616}
+.btn{min-height:44px;padding:0 24px;background:#161616;color:#EFEEEF;border:0;font-family:Archivo,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;cursor:pointer}
+.btn-p{min-height:44px;padding:0 24px;background:#424437;color:#EFEEEF;border:0;font-family:Archivo,sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+.btn2{min-height:44px;padding:0 24px;background:transparent;color:#161616;border:1.5px solid #161616;font-family:Archivo,sans-serif;font-size:14px;font-weight:500;cursor:pointer}
+.th{padding:10px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:11px;letter-spacing:.05em;background:#B2B794;color:#161616;border-bottom:1.5px solid #161616;white-space:nowrap}
+.td{padding:9px 12px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;border-bottom:1px solid #ADADAC;color:#424437}
+.note{margin:0;font-size:13px;color:#313030;line-height:1.55}
+</style>
+</helmet>
+<div style="font-family: Archivo, system-ui, sans-serif; color: #161616; background: #EFEEEF; min-height: 100vh">
+  <div style="max-width: 1040px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 36px">
+    <a href="C2-Inicio.dc.html" style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; align-self: flex-start">← Todos los ensayos</a>
+
+    <header style="border: 1.5px solid #161616; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))">
+      <div style="grid-column: 1 / -1; background: #161616; color: #EFEEEF; padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: baseline">
+        <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.02em">Vibración Mano-Brazo</h1>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #B2B794">02 · VMB / HAV</span>
+      </div>
+      <div class="cell"><span class="lbl">Magnitud</span><span style="font-size: 14px; font-weight: 500">Aeq(8h)</span></div>
+      <div class="cell"><span class="lbl">Resolución</span><span style="font-size: 14px; font-weight: 500">Banda de octava</span></div>
+      <div class="cell"><span class="lbl">Norma</span><span style="font-size: 14px; font-weight: 500">DGNTI-COPANIT 45-2000</span></div>
+      <div class="cell" style="border-right: 0"><span class="lbl">Salida</span><span style="font-size: 14px; font-weight: 500">.xlsx + trazabilidad</span></div>
+    </header>
+
+    <section style="display: flex; flex-direction: column; gap: 16px">
+      <h2 class="sec"><span class="num">1</span>CARGAR ARCHIVOS</h2>
+      <p class="note">Tres archivos por brazo, un minuto cada uno. Cada archivo con las hojas X, Y, Z (patrón "&lt;eje&gt; OBA").</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); border: 1.5px solid #161616">
+        <sc-for list="{{arms}}" as="arm" hint-placeholder-count="2">
+          <div style="border-right: 1px solid #161616; display: flex; flex-direction: column">
+            <div style="padding: 10px 14px; border-bottom: 1px solid #161616; display: flex; justify-content: space-between; align-items: center; background: #B2B794"><span style="font-weight: 600; font-size: 14px">{{arm.name}}</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px">{{arm.count}}/3</span></div>
+            <sc-for list="{{arm.files}}" as="f" hint-placeholder-count="3">
+              <div style="padding: 10px 14px; border-bottom: 1px solid #ADADAC; display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px">
+                <span style="color: #424437">{{f.i}}</span>
+                <span style="color: {{f.color}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{f.name}}</span>
+                <span style="font-size: 11px; padding: 2px 6px; background: {{f.bg}}; color: {{f.fg}}; border: 1px {{f.bstyle}} {{f.bcolor}}">{{f.tag}}</span>
+              </div>
+            </sc-for>
+            <label style="margin: 12px 14px 14px; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1.5px dashed #6E6F62; font-family: 'IBM Plex Mono', monospace; font-size: 12px; cursor: pointer">+ AGREGAR .XLSX<input type="file" accept=".xlsx" multiple style="display: none"></label>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center; background: #161616; color: #EFEEEF; padding: 12px 16px; font-size: 13px">
+        <span style="font-family: 'IBM Plex Mono', monospace; background: #B2B794; color: #161616; padding: 1px 8px; font-weight: 500">!</span>
+        <span>Brazo izquierdo · archivo 02: una hoja no coincide con "&lt;eje&gt; OBA". Asigna el eje manualmente.</span>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px">
+      <h2 class="sec"><span class="num">2</span>TIEMPO DE EXPOSICIÓN Y CÁLCULO</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="c2-texp" class="lbl">Tiempo de exposición real (min)</label>
+          <input id="c2-texp" type="number" class="inp" placeholder="0" style="width: 200px">
+        </div>
+        <button type="button" class="btn">CALCULAR</button>
+        <span class="note" style="flex: 1 1 260px">Aplica a ambos brazos; se procesa cada brazo con sus 3 archivos cargados.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px">
+        <div style="border: 1.5px solid #161616; padding: 14px 16px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">Total = √(X² + Y² + Z²)</span><span class="lbl">Ec. 1</span></div>
+        <div style="border: 1.5px solid #161616; padding: 14px 16px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">Aeq(8h) = Total × √(T / 480)</span><span class="lbl">Ec. 2</span></div>
+      </div>
+      <div role="tablist" aria-label="Brazo" style="display: flex; gap: 0; border-bottom: 1.5px solid #161616">
+        <button type="button" role="tab" aria-selected="true" style="min-height: 44px; padding: 0 18px; background: #161616; color: #EFEEEF; border: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .05em">BRAZO DERECHO</button>
+        <button type="button" role="tab" aria-selected="false" style="min-height: 44px; padding: 0 18px; background: transparent; color: #161616; border: 0; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: .05em">BRAZO IZQUIERDO</button>
+      </div>
+      <div style="overflow-x: auto">
+        <table style="width: 100%; border-collapse: collapse; min-width: 640px">
+          <caption style="text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding-bottom: 8px; color: #313030">TABLA 1 — Brazo derecho · m/s²</caption>
+          <thead><tr><th class="th" style="text-align: left">BANDA Hz</th><th class="th">X</th><th class="th">Y</th><th class="th">Z</th><th class="th">TOTAL</th><th class="th">Aeq(8h)</th><th class="th">LÍMITE</th><th class="th">ESTADO</th></tr></thead>
+          <tbody>
+            <sc-for list="{{bands}}" as="b" hint-placeholder-count="8">
+              <tr><td class="td" style="text-align: left; color: #161616">{{b}}</td><td class="td">—</td><td class="td">—</td><td class="td">—</td><td class="td">—</td><td class="td">—</td><td class="td">—</td><td class="td">—</td></tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 12px; color: #313030; font-family: 'IBM Plex Mono', monospace">
+        <span style="display: flex; gap: 8px; align-items: center"><span style="background: #B2B794; color: #161616; padding: 1px 6px">CUMPLE</span>Aeq(8h) ≤ límite</span>
+        <span style="display: flex; gap: 8px; align-items: center"><span style="background: #161616; color: #EFEEEF; padding: 1px 6px">EXCEDE</span>Aeq(8h) &gt; límite</span>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 16px">
+      <h2 class="sec"><span class="num">3</span>GENERAR Y DESCARGAR REPORTE</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+        <button type="button" class="btn-p">Descargar reporte (.xlsx)</button>
+        <button type="button" class="btn2">Limpiar archivos</button>
+        <span class="note">Requiere al menos un brazo calculado.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); border: 1.5px solid #161616">
+        <div class="cell"><span class="lbl">Hoja 1</span><span style="font-size: 14px; font-weight: 500">Brazo derecho</span></div>
+        <div class="cell"><span class="lbl">Hoja 2</span><span style="font-size: 14px; font-weight: 500">Brazo izquierdo</span></div>
+        <div class="cell" style="border-right: 0"><span class="lbl">Hoja 3</span><span style="font-size: 14px; font-weight: 500">Trazabilidad</span></div>
+      </div>
+      <p class="note" style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #424437">Trazabilidad: archivos fuente, asignación de ejes, tiempo de exposición y fórmulas. Promedio por banda de las 3 hojas homólogas; 8 bandas (8–1000 Hz) detectadas por título de columna.</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ok = { tag: '✓ X·Y·Z', bg: '#B2B794', fg: '#161616', bstyle: 'solid', bcolor: '#B2B794', color: '#161616' };
+    const warn = { tag: '! ASIGNAR EJE', bg: '#161616', fg: '#EFEEEF', bstyle: 'solid', bcolor: '#161616', color: '#161616' };
+    const empty = { tag: 'PENDIENTE', bg: 'transparent', fg: '#424437', bstyle: 'dashed', bcolor: '#6E6F62', color: '#424437' };
+    return {
+      arms: [
+        { name: 'Brazo derecho', count: 3, files: [ { i: '01', name: '[archivo_1].xlsx', ...ok }, { i: '02', name: '[archivo_2].xlsx', ...ok }, { i: '03', name: '[archivo_3].xlsx', ...ok } ] },
+        { name: 'Brazo izquierdo', count: 2, files: [ { i: '01', name: '[archivo_1].xlsx', ...ok }, { i: '02', name: '[archivo_2].xlsx', ...warn }, { i: '03', name: '—', ...empty } ] }
+      ],
+      bands: ['8', '16', '31,5', '63', '125', '250', '500', '1000']
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>C2 · Paleta y componentes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#EFEEEF}
+.lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#424437}
+.sec{margin:0;font-size:20px;font-weight:700;border-bottom:3px solid #161616;padding-bottom:8px}
+.inp{min-height:44px;box-sizing:border-box;padding:0 12px;border:1.5px solid #161616;background:transparent;font-family:'IBM Plex Mono',monospace;font-size:15px;color:#161616}
+.btn{min-height:44px;padding:0 24px;background:#161616;color:#EFEEEF;border:0;font-family:Archivo,sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em}
+.btn-p{min-height:44px;padding:0 24px;background:#424437;color:#EFEEEF;border:0;font-family:Archivo,sans-serif;font-size:14px;font-weight:600}
+.btn2{min-height:44px;padding:0 24px;background:transparent;color:#161616;border:1.5px solid #161616;font-family:Archivo,sans-serif;font-size:14px;font-weight:500}
+</style>
+</helmet>
+<div style="font-family: Archivo, system-ui, sans-serif; color: #161616; background: #EFEEEF; min-height: 100vh">
+  <div style="max-width: 1200px; margin: 0 auto; padding: 40px 24px 56px; display: flex; flex-direction: column; gap: 40px">
+    <header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; border-bottom: 3px solid #161616; padding-bottom: 12px">
+      <h1 style="margin: 0; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1">Paleta y componentes</h1>
+      <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #313030">Referencia para implementar · variables CSS</span>
+    </header>
+
+    <section style="display: flex; flex-direction: column; gap: 16px">
+      <h2 class="sec">Color · rol de cada tono</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0; border: 1.5px solid #161616">
+        <sc-for list="{{colors}}" as="c" hint-placeholder-count="8">
+          <div style="display: flex; border-right: 1px solid #161616; border-bottom: 1px solid #161616">
+            <div style="width: 88px; flex-shrink: 0; background: {{c.hex}}; border-right: 1px solid #161616"></div>
+            <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500">{{c.var}}</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #424437">{{c.hex}}</span>
+              <span style="font-size: 13px; color: #313030; line-height: 1.4">{{c.use}}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 13px; color: #313030; line-height: 1.55">Contraste: texto pequeño solo en <span style="font-family: 'IBM Plex Mono', monospace">--ink</span>, <span style="font-family: 'IBM Plex Mono', monospace">--ink-2</span> u <span style="font-family: 'IBM Plex Mono', monospace">--olive-900</span> sobre fondo claro. <span style="font-family: 'IBM Plex Mono', monospace">--olive-600</span> solo en textos ≥ 24 px o líneas. Los rellenos <span style="font-family: 'IBM Plex Mono', monospace">--olive-500</span> y <span style="font-family: 'IBM Plex Mono', monospace">--sage</span> llevan texto <span style="font-family: 'IBM Plex Mono', monospace">--ink</span>.</p>
+    </section>
+
+    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px">
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <h2 class="sec">Tipografía</h2>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Archivo 700 · títulos</span><span style="font-size: 32px; font-weight: 700; letter-spacing: -0.02em">Vibración Mano-Brazo</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Archivo 700 · secciones (mayúsculas)</span><span style="font-size: 20px; font-weight: 700">TIEMPO DE EXPOSICIÓN</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Archivo 400 · texto</span><span style="font-size: 15px; line-height: 1.55; color: #313030">Aplica a ambos brazos; se procesa cada brazo con sus archivos.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">IBM Plex Mono · datos, etiquetas, fórmulas</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px">Aeq(8h) = Total × √(T / 480)</span></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <h2 class="sec">Componentes</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px">
+          <button type="button" class="btn">CALCULAR</button>
+          <button type="button" class="btn-p">Descargar .xlsx</button>
+          <button type="button" class="btn2">Limpiar</button>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 11px">
+          <span style="background: #B2B794; padding: 3px 8px">✓ X·Y·Z</span>
+          <span style="background: #161616; color: #EFEEEF; padding: 3px 8px">! ASIGNAR EJE</span>
+          <span style="border: 1px dashed #6E6F62; color: #424437; padding: 2px 8px">PENDIENTE</span>
+          <span style="background: #B2B794; padding: 3px 8px">CUMPLE</span>
+          <span style="background: #161616; color: #EFEEEF; padding: 3px 8px">EXCEDE</span>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: center"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 14px; background: #8D9075; padding: 2px 8px">2</span><span style="font-size: 20px; font-weight: 700">Encabezado de paso</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px"><label for="tk-in" class="lbl">Campo</label><input id="tk-in" type="number" class="inp" placeholder="0" style="width: 200px"></div>
+        <div style="display: flex; gap: 12px; align-items: center; background: #161616; color: #EFEEEF; padding: 12px 16px; font-size: 13px"><span style="font-family: 'IBM Plex Mono', monospace; background: #B2B794; color: #161616; padding: 1px 8px">!</span>Aviso del sistema</div>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px">
+      <h2 class="sec">Variables CSS</h2>
+      <pre style="margin: 0; border: 1.5px solid #161616; padding: 16px 18px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre">{{css}}</pre>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const colors = [
+      { var: '--bg', hex: '#EFEEEF', use: 'Fondo de página y campos' },
+      { var: '--ink', hex: '#161616', use: 'Texto, bordes, banda de encabezado, botón Calcular, avisos' },
+      { var: '--ink-2', hex: '#313030', use: 'Texto secundario y notas' },
+      { var: '--olive-900', hex: '#424437', use: 'Etiquetas pequeñas, botón Descargar' },
+      { var: '--olive-600', hex: '#6E6F62', use: 'Numerales grandes, borde de zona de carga' },
+      { var: '--olive-500', hex: '#8D9075', use: 'Número de paso (relleno)' },
+      { var: '--sage', hex: '#B2B794', use: 'Encabezado de tabla, estado OK / Cumple' },
+      { var: '--rule', hex: '#ADADAC', use: 'Líneas finas entre filas' }
+    ];
+    return {
+      colors,
+      css: ':root {\n' + colors.map((c) => '  ' + c.var + ': ' + c.hex + ';').join('\n') + '\n  --font-sans: "Archivo", system-ui, sans-serif;\n  --font-mono: "IBM Plex Mono", ui-monospace, monospace;\n  --border: 1.5px solid var(--ink);\n}'
+    };
+  }
+}
+</script>
+</body>
+</html>

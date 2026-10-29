@@ -8,6 +8,19 @@
 // sí mismo. El promedio de cada banda, para un eje dado, se calcula combinando los datos
 // de las 3 hojas de ese eje (una por archivo/minuto), no por archivo individual.
 
+// Identificación del módulo: la leen el encabezado de la página y la memoria de cálculo
+// (ISO/IEC 17025). Al cambiar el cálculo, subir la versión y agregar una entrada al historial.
+const MODULO_INFO = {
+  codigo: '02 · VMB / HAV',
+  titulo: 'Vibración Mano-Brazo',
+  sigla: 'VMB',
+  version: '1.0.0',
+  fecha: '2026-10-28',
+  historial: [
+    { version: '1.0.0', fecha: '2026-10-28', cambio: 'Versión inicial documentada.' }
+  ]
+};
+
 // Bandas de octava requeridas (Hz), en el orden en que se muestran/exportan.
 const TARGET_BANDS = [8, 16, 31.5, 63, 125, 250, 500, 1000];
 
@@ -19,6 +32,10 @@ const LIMITES_COPANIT = {
 };
 
 const AXES = ['X', 'Y', 'Z'];
+// Jornada de referencia de 8 h (min) para Aeq(8h).
+const T0_MINUTOS = 480;
+// Tolerancia (Hz) para reconocer el título de una columna como banda de TARGET_BANDS.
+const TOL_BANDA_HZ = 0.01;
 const AXIS_RE = /([xyz])\s*OBA/i;
 const BAND_SEARCH_ROWS = 10;
 
@@ -61,7 +78,7 @@ function findBandRow(aoa, maxRows) {
     const row = aoa[r] || [];
     for (let c = 0; c < row.length; c++) {
       const freq = LabUtils.parseNumericHeader(row[c]);
-      if (freq !== null && TARGET_BANDS.some(b => Math.abs(b - freq) < 0.01)) return r;
+      if (freq !== null && TARGET_BANDS.some(b => Math.abs(b - freq) < TOL_BANDA_HZ)) return r;
     }
   }
   return -1;
@@ -74,7 +91,7 @@ function buildBandColIndex(headerRow) {
   (headerRow || []).forEach((h, i) => {
     const freq = LabUtils.parseNumericHeader(h);
     if (freq === null) return;
-    const band = TARGET_BANDS.find(b => Math.abs(b - freq) < 0.01);
+    const band = TARGET_BANDS.find(b => Math.abs(b - freq) < TOL_BANDA_HZ);
     if (band !== undefined && !(band in colIndex)) colIndex[band] = i;
   });
   return colIndex;
@@ -143,7 +160,7 @@ function createArmController(side, label, mountEl) {
   // referencias siguen funcionando sobre un nodo desmontado, sin efecto visible).
   if (!DEBUG_MODE) debugPanel.remove();
 
-  // files: [{ file, workbook, detected: {X,Y,Z}, manual: {X,Y,Z}, operatorName }]
+  // files: [{ file, workbook, sha256, size, detected: {X,Y,Z}, manual: {X,Y,Z}, operatorName }]
   let files = [];
   let lastResult = null;
   let armOperatorInfo = null;
@@ -173,9 +190,9 @@ function createArmController(side, label, mountEl) {
 
     for (const file of fileArr) {
       try {
-        const workbook = await LabUtils.readWorkbook(file);
+        const { workbook, sha256, size } = await LabUtils.readWorkbookWithHash(file);
         files.push({
-          file, workbook,
+          file, workbook, sha256, size,
           detected: detectAxisSheets(workbook),
           manual: { X: null, Y: null, Z: null },
           operatorName: extractOperatorName(file.name)
@@ -354,7 +371,9 @@ function createArmController(side, label, mountEl) {
         traceInfo.push({
           fileName: f.file.name, axis, sheetName,
           method: f.manual[axis] ? 'Manual' : 'Automático (nombre de hoja)',
-          operatorName: f.operatorName
+          operatorName: f.operatorName,
+          filasUsadas: validRowIdxs.length,
+          filasDescartadas: totalDataRows - validRowIdxs.length
         });
       }
     }
@@ -377,13 +396,21 @@ function createArmController(side, label, mountEl) {
     const rows = TARGET_BANDS.map(band => {
       const X = axisAverages.X[band], Y = axisAverages.Y[band], Z = axisAverages.Z[band];
       const total = Math.sqrt(X * X + Y * Y + Z * Z);
-      const aeq8h = total * Math.sqrt(tiempoMin / 480);
+      const aeq8h = total * Math.sqrt(tiempoMin / T0_MINUTOS);
       const limite = LIMITES_COPANIT[band];
       const estado = aeq8h > limite ? 'Excede' : 'Cumple';
       return { band, X, Y, Z, aeq8h, limite, estado };
     });
 
-    lastResult = { side, label, rows, tiempoMin, traceInfo, operatorInfo: armOperatorInfo };
+    // muestras y archivos no participan del cálculo: quedan para la memoria de cálculo.
+    lastResult = {
+      side, label, rows, tiempoMin, traceInfo, operatorInfo: armOperatorInfo,
+      muestras: bandValues,
+      archivos: files.map(f => ({
+        nombre: f.file.name, tamanoBytes: f.size, sha256: f.sha256,
+        hojas: AXES.map(axis => resolvedSheet(f, axis)).join(', ')
+      }))
+    };
     renderPreview(lastResult);
     updateGlobalDownloadState();
   }

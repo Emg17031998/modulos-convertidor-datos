@@ -8,6 +8,9 @@
 <link rel="stylesheet" href="vibracion-mano-brazo.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+<!-- docx (memoria de cálculo) no está publicada en cdnjs; jsDelivr sirve su build UMD como
+     JavaScript (el build de la v9 se sirve como application/node y el navegador lo bloquea). -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 </head>
 <body>
 
@@ -25,6 +28,12 @@
     <div class="doc-cell"><span class="lbl">Norma</span><span class="doc-cell-value">DGNTI-COPANIT 45-2000</span></div>
     <div class="doc-cell"><span class="lbl">Salida</span><span class="doc-cell-value">.xlsx + trazabilidad</span></div>
   </header>
+
+  <div class="actions actions-memoria">
+    <p class="note-mono" id="memoriaEstado">Descripción del método · sin resultados</p>
+    <button class="btn-secondary" id="memoriaBtn">Memoria de cálculo (.docx)</button>
+  </div>
+  <p class="err" id="memoriaErr"></p>
 
   <!-- Bloque de un brazo, clonado por vibracion-mano-brazo.js dentro de #armDer / #armIzq. Se
        conservan los ganchos que usa ese JS: la raíz .arm-block, .arm-title (donde escribe "Brazo
@@ -128,8 +137,10 @@
 
 </div>
 
-<script src="../../assets/js/utils.js"></script>
-<script src="vibracion-mano-brazo.js"></script>
-<script src="vibracion-mano-brazo-ui.js"></script>
+<script src="../../assets/js/utils.js?v=2026-10-28-memoria"></script>
+<script src="../../assets/js/memoria-calculo.js?v=2026-10-28-memoria"></script>
+<script src="vibracion-mano-brazo.js?v=2026-10-28-memoria"></script>
+<script src="vibracion-mano-brazo-ui.js?v=2026-10-28-memoria"></script>
+<script src="vibracion-mano-brazo-memoria.js?v=2026-10-28-memoria"></script>
 </body>
 </html>

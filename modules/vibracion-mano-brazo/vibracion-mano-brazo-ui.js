@@ -28,4 +28,20 @@
   pares.forEach(({ tab }) => {
     document.getElementById(tab).addEventListener('click', () => seleccionar(tab));
   });
+
+  // El código del encabezado sale de MODULO_INFO, igual que en la memoria de cálculo.
+  document.querySelector('.doc-code').textContent = MODULO_INFO.codigo;
+
+  // Estado del botón "Memoria de cálculo": incluye el registro de la ejecución solo si algún
+  // brazo tiene resultado. Cargar archivos nuevos o Limpiar borra el resultado del brazo; estos
+  // listeners corren después de los del módulo (los de document, en la fase de burbuja).
+  const memoriaEstado = document.getElementById('memoriaEstado');
+  function actualizarEstadoMemoria() {
+    const hay = armControllers.der.getResult() || armControllers.izq.getResult();
+    memoriaEstado.textContent = hay ? 'Incluye el registro del último cálculo' : 'Descripción del método · sin resultados';
+  }
+  document.getElementById('calcBtn').addEventListener('click', actualizarEstadoMemoria);
+  document.getElementById('clearBtn').addEventListener('click', actualizarEstadoMemoria);
+  document.addEventListener('change', actualizarEstadoMemoria);
+  document.addEventListener('drop', actualizarEstadoMemoria);
 })();

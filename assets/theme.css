@@ -3,7 +3,7 @@
    Reglas: texto pequeño solo en --ink, --ink-2 u --olive-900; los rellenos --olive-500 y --sage
    llevan texto --ink; sin esquinas redondeadas, sin sombras, sin degradados. */
 
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root{
   --bg:#EFEEEF;          /* fondo de página y campos */
@@ -17,6 +17,11 @@
   --font-sans:"Archivo", system-ui, sans-serif;
   --font-mono:"IBM Plex Mono", ui-monospace, monospace;
   --border:1.5px solid var(--ink);
+  /* Logo "Lab.S" (assets/brand/labs-logo.svg): variante principal; .logo--* la cambia. */
+  --logo-ink:var(--ink);       /* contorno */
+  --logo-mesh:var(--olive-500);/* malla milimetrada */
+  --logo-dot:var(--sage);      /* punto */
+  --logo-fill:var(--bg);       /* fondo del interior de las letras */
 }
 
 *{box-sizing:border-box;}
@@ -52,6 +57,18 @@ input[type=file]{display:none;}
 .doc-cell-value{font-size:14px;font-weight:500;}
 .doc-cell.is-sage{background:var(--sage);}
 .doc-cell.is-sage .lbl{color:var(--ink);}
+
+/* Logo "Lab.S" (SVG inline, misma marca que assets/brand/labs-logo.svg). En la banda negra va
+   arriba del título, en su propia fila. */
+.logo--principal{--logo-ink:var(--ink);--logo-mesh:var(--olive-500);--logo-dot:var(--sage);--logo-fill:var(--bg);}
+.logo--negativo{--logo-ink:var(--sage);--logo-mesh:var(--olive-500);--logo-dot:var(--sage);--logo-fill:var(--ink-2);}
+.logo--plano{--logo-ink:var(--ink);--logo-mesh:var(--rule);--logo-dot:var(--ink);--logo-fill:#FFFFFF;}
+.logo-letras{
+  font-family:"Archivo Black", var(--font-sans);font-size:100px;letter-spacing:-3px;
+  paint-order:stroke;stroke-width:16px;stroke-linejoin:round;
+}
+.doc-header-top.has-logo{padding-top:28px;}
+.doc-logo{flex-basis:100%;display:block;height:72px;width:auto;max-width:100%;margin-bottom:6px;}
 
 /* ---------- Tipografía de apoyo ---------- */
 .lbl{
@@ -272,29 +289,38 @@ table.debug-table td{padding:5px 8px;border-bottom:1px solid var(--rule);vertica
 .home-subtitle{font-family:var(--font-mono);font-size:13px;color:var(--ink-2);}
 .module-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
 .module-list li{border-bottom:1px solid var(--ink);}
+/* Fila de módulo: número + título a la izquierda, estado + ABRIR a la derecha. Un módulo disponible
+   es un <a class="module-link" href>; uno no disponible (ej. "Próximamente") va como
+   <div class="module-link"> con .chip-pending, sin .module-open, y no se invierte ni es clicable. */
 .module-link{
-  text-decoration:none;color:var(--ink);display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:24px;padding:28px 0;align-items:start;
+  text-decoration:none;color:var(--ink);display:flex;flex-wrap:wrap;align-items:center;
+  justify-content:space-between;gap:16px 24px;padding:24px 20px;
 }
-.module-link:hover{color:var(--ink);background:#E6E5E3;}
-.module-main{display:flex;gap:20px;align-items:baseline;grid-column:span 2;}
+.module-main{display:flex;gap:20px;align-items:baseline;flex:1 1 280px;min-width:0;}
 .module-num{font-family:var(--font-mono);font-size:40px;font-weight:500;color:var(--olive-600);line-height:1;}
-.module-text{display:flex;flex-direction:column;gap:8px;}
 .module-name{font-size:24px;font-weight:600;line-height:1.15;}
-.module-desc{font-size:15px;line-height:1.5;color:var(--ink-2);max-width:480px;}
-.module-spec{margin:0;display:grid;grid-template-columns:90px 1fr;row-gap:6px;font-family:var(--font-mono);font-size:12.5px;}
-.module-spec dt{color:var(--olive-900);}
-.module-spec dd{margin:0;}
-.module-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
+.module-actions{display:flex;align-items:center;gap:16px;margin-left:auto;}
 .module-open{
   font-size:14px;font-weight:600;display:flex;gap:10px;align-items:center;min-height:44px;
   padding:0 16px;background:var(--ink);color:var(--bg);
 }
+/* Hover / foco de teclado: la fila disponible invierte sus colores (solo fondo y color, sin tocar
+   bordes ni padding). .chip-ok (--sage con texto --ink) ya contrasta sobre --ink, queda igual. */
+a.module-link[href], a.module-link[href] .module-num, a.module-link[href] .module-open{
+  transition:background-color .18s ease, color .18s ease;
+}
+a.module-link[href]{cursor:pointer;}
+a.module-link[href]:hover, a.module-link[href]:focus-visible{background:var(--ink);color:var(--bg);}
+a.module-link[href]:hover .module-num, a.module-link[href]:focus-visible .module-num{color:var(--bg);}
+a.module-link[href]:hover .module-open, a.module-link[href]:focus-visible .module-open{background:var(--bg);color:var(--ink);}
+a.module-link[href]:focus-visible{outline:3px solid var(--olive-500);outline-offset:2px;}
 
 /* ---------- Teléfono ---------- */
 @media (max-width:640px){
   .page{padding:20px 16px 48px;gap:28px;}
   .doc-title{font-size:26px;}
+  .doc-header-top.has-logo{padding-top:22px;}
+  .doc-logo{height:44px;}
   .doc-header{grid-template-columns:1fr;}
   .doc-cell{border-right:0;border-bottom:1px solid var(--ink);}
   .doc-cell:last-child{border-bottom:0;}
@@ -302,6 +328,7 @@ table.debug-table td{padding:5px 8px;border-bottom:1px solid var(--rule);vertica
   .cell:last-child{border-bottom:0;}
   .form-grid{grid-template-columns:1fr;}
   .home-title{font-size:34px;}
-  .module-main{grid-column:auto;}
-  .module-actions{align-items:flex-start;}
+  .module-link{padding:20px 16px;}
+  .module-num{font-size:32px;}
+  .module-name{font-size:20px;}
 }

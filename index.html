@@ -11,7 +11,23 @@
 <div class="page page-wide">
 
   <header class="doc-header">
-    <div class="doc-header-top">
+    <div class="doc-header-top has-logo">
+      <!-- Logo "Lab.S": copia inline de assets/brand/labs-logo.svg (sin su bloque <style>, que acá
+           lo da theme.css) para que use la fuente cargada y los tokens --logo-*. -->
+      <svg class="doc-logo logo logo--negativo" viewBox="20 12 330 106" preserveAspectRatio="xMinYMid meet" role="img" aria-label="Lab.S">
+        <defs>
+          <pattern id="logo-malla" width="8" height="8" patternUnits="userSpaceOnUse">
+            <rect width="8" height="8" fill="var(--logo-fill)"/>
+            <path d="M0 0.6H8M0.6 0V8" stroke="var(--logo-mesh)" stroke-width="1.2"/>
+          </pattern>
+        </defs>
+        <g class="logo-letras" fill="url(#logo-malla)" stroke="var(--logo-ink)">
+          <text x="213" y="100" text-anchor="end">Lab</text>
+          <text x="262" y="100">S</text>
+        </g>
+        <rect x="227" y="82" width="18" height="18" paint-order="stroke" fill="var(--logo-dot)"
+              stroke="var(--logo-ink)" stroke-width="16" stroke-linejoin="round"/>
+      </svg>
       <h1 class="doc-title">Módulos de Laboratorio</h1>
       <span class="doc-code">DOC · CONVERTIDOR DE DATOS</span>
     </div>
@@ -31,16 +47,8 @@
       <a class="module-link" href="modules/calidad-aire/index.html">
         <div class="module-main">
           <span class="module-num">01</span>
-          <div class="module-text">
-            <span class="module-name">Calidad de Aire Ambiental</span>
-            <span class="module-desc">Promedios horarios a partir de registros de 5 min (formato EPAS), con conversión opcional ppb → µg/m³.</span>
-          </div>
+          <span class="module-name">Calidad de Aire Ambiental</span>
         </div>
-        <dl class="module-spec">
-          <dt>ENTRADA</dt><dd>.xlsx · 5 min</dd>
-          <dt>CÁLCULO</dt><dd>Promedio 1 h</dd>
-          <dt>NORMA</dt><dd>EPA 25 °C, 1 atm</dd>
-        </dl>
         <div class="module-actions">
           <span class="chip-ok">Disponible</span>
           <span class="module-open">ABRIR <span aria-hidden="true">→</span></span>
@@ -51,16 +59,8 @@
       <a class="module-link" href="modules/vibracion-mano-brazo/index.html">
         <div class="module-main">
           <span class="module-num">02</span>
-          <div class="module-text">
-            <span class="module-name">Vibración Mano-Brazo (HAV)</span>
-            <span class="module-desc">Aeq(8h) por banda de octava a partir de archivos X/Y/Z y comparación con límites.</span>
-          </div>
+          <span class="module-name">Vibración Mano-Brazo (HAV)</span>
         </div>
-        <dl class="module-spec">
-          <dt>ENTRADA</dt><dd>3 arch. × brazo</dd>
-          <dt>CÁLCULO</dt><dd>Aeq(8h) · octava</dd>
-          <dt>NORMA</dt><dd>COPANIT 45-2000</dd>
-        </dl>
         <div class="module-actions">
           <span class="chip-ok">Disponible</span>
           <span class="module-open">ABRIR <span aria-hidden="true">→</span></span>
@@ -71,16 +71,8 @@
       <a class="module-link" href="modules/vibracion-cuerpo-entero/index.html">
         <div class="module-main">
           <span class="module-num">03</span>
-          <div class="module-text">
-            <span class="module-name">Vibración Cuerpo Entero (VCE)</span>
-            <span class="module-desc">A(8h) por tercio de octava a partir del archivo del equipo HVM200 y comparación con límites.</span>
-          </div>
+          <span class="module-name">Vibración Cuerpo Entero (VCE)</span>
         </div>
-        <dl class="module-spec">
-          <dt>ENTRADA</dt><dd>.xlsx del equipo</dd>
-          <dt>CÁLCULO</dt><dd>A(8h) · 1/3 oct.</dd>
-          <dt>NORMA</dt><dd>COPANIT 45-2000</dd>
-        </dl>
         <div class="module-actions">
           <span class="chip-ok">Disponible</span>
           <span class="module-open">ABRIR <span aria-hidden="true">→</span></span>

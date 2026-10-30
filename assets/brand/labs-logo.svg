@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="logo logo--principal" viewBox="20 12 330 106" preserveAspectRatio="xMinYMid meet" role="img" aria-label="Lab.S">
+  <!-- Logo "Lab.S": Archivo Black con contorno grueso (paint-order: stroke deja medio trazo por
+       fuera y la malla encima) e interior de hoja milimetrada. Los colores salen de --logo-ink,
+       --logo-mesh, --logo-dot y --logo-fill (assets/theme.css); los valores de respaldo son los de
+       la variante principal, para cuando el archivo se abre suelto. -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&amp;display=swap');
+    .logo-letras{font-family:"Archivo Black","Archivo",system-ui,sans-serif;font-size:100px;letter-spacing:-3px;
+      paint-order:stroke;stroke-width:16px;stroke-linejoin:round;}
+  </style>
+  <defs>
+    <pattern id="logo-malla" width="8" height="8" patternUnits="userSpaceOnUse">
+      <rect width="8" height="8" fill="var(--logo-fill, #EFEEEF)"/>
+      <path d="M0 0.6H8M0.6 0V8" stroke="var(--logo-mesh, #8D9075)" stroke-width="1.2"/>
+    </pattern>
+  </defs>
+  <g class="logo-letras" fill="url(#logo-malla)" stroke="var(--logo-ink, #161616)">
+    <text x="213" y="100" text-anchor="end">Lab</text>
+    <text x="262" y="100">S</text>
+  </g>
+  <rect x="227" y="82" width="18" height="18" paint-order="stroke" fill="var(--logo-dot, #B2B794)"
+        stroke="var(--logo-ink, #161616)" stroke-width="16" stroke-linejoin="round"/>
+</svg>

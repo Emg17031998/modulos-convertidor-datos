@@ -915,9 +915,11 @@ exportXlsxBtn.addEventListener('click', () => {
 // navegador con la librería docx (cargada por CDN en index.html). Solo vuelca lastResult — no
 // recalcula nada.
 
-const WORD_FUENTE = 'Arial';
+const WORD_FUENTE = 'Lato';
 const WORD_TAMANO = 18; // medios puntos → 9 pt
-const WORD_COLOR = { verde: 'CCFFCC', gris: 'C0C0C0', rojo: 'FF0000' };
+// etiqueta: fondo de "Duración de la medición:", "Área" y "Tiempo de exposición (minutos)"; sobre
+// ese azul oscuro el texto negro no se lee, por eso esas etiquetas van en blanco (textoEtiqueta).
+const WORD_COLOR = { etiqueta: '213468', textoEtiqueta: 'FFFFFF', rojo: 'FF0000' };
 // Anchos de columna en twips (1/20 pt): frecuencia + 3 ejes × (medido, límite). Total 9360 = 16,5 cm.
 const WORD_COLUMNAS = [1500, 1310, 1310, 1310, 1310, 1310, 1310];
 // Alto fijo de cada fila, en puntos: misma proporción que la plantilla del laboratorio, redondeada
@@ -983,7 +985,7 @@ function construirDocumentoWord(res, datos) {
     ], { span: 7, align: AlignmentType.LEFT })]),
     fila(A.horaDuracion, [
       celda([texto('Hora de la medición: ', { bold: true }), texto(datos.hora, { bold: true })], { span: 3, align: AlignmentType.LEFT }),
-      celda('Duración de la medición:', { span: 2, fill: WORD_COLOR.verde, bold: true }),
+      celda('Duración de la medición:', { span: 2, fill: WORD_COLOR.etiqueta, bold: true, color: WORD_COLOR.textoEtiqueta }),
       celda(res.duracionMedicion, { span: 2 })
     ]),
     fila(A.encabezadoEje, [celda('Frecuencia media de la banda terciaria (Hz)', { bold: true, rowSpan: 4 }), ...AXES.map(encabezadoEje)]),
@@ -1006,9 +1008,9 @@ function construirDocumentoWord(res, datos) {
     fila(A.leyendaAreas, [celda('Los resultados fueron obtenidos tomando en cuenta el tiempo de exposición en las siguientes áreas:', { span: 7 })]),
     fila(A.etiquetasArea, [
       celda('', { borders: rellenoIzq }),
-      celda('Área', { span: 2, fill: WORD_COLOR.gris, bold: true }),
+      celda('Área', { span: 2, fill: WORD_COLOR.etiqueta, bold: true, color: WORD_COLOR.textoEtiqueta }),
       celda('', { borders: rellenoMedio }),
-      celda('Tiempo de exposición (minutos)', { span: 2, fill: WORD_COLOR.gris, bold: true }),
+      celda('Tiempo de exposición (minutos)', { span: 2, fill: WORD_COLOR.etiqueta, bold: true, color: WORD_COLOR.textoEtiqueta }),
       celda('', { borders: rellenoDer })
     ]),
     fila(A.valoresArea, [
